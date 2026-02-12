@@ -1,0 +1,37 @@
+﻿@page "/test-connection"
+@using Microsoft.Data.SqlClient
+@inject IConfiguration Configuration
+@rendermode InteractiveServer
+
+<h3>Test de Conexión SQL</h3>
+
+<button class="btn btn-primary" @onclick="TestConnection">
+    Probar Conexión
+</button>
+
+<p>@mensaje</p>
+
+@code {
+
+    private string mensaje = "Esperando prueba...";
+
+    private async Task TestConnection()
+    {
+        try
+        {
+            mensaje = "Intentando conectar...";
+            StateHasChanged();
+
+            var connectionString = Configuration.GetConnectionString("DefaultConnection");
+
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            mensaje = "✅ Conexión exitosa con la base de datos.";
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"❌ Error: {ex.Message}";
+        }
+    }
+}

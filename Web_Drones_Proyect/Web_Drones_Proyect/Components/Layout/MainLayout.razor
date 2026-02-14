@@ -1,23 +1,52 @@
 ﻿@inherits LayoutComponentBase
+@using MudBlazor
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<MudLayout Style="min-height:100vh; display:flex; flex-direction:column;">
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+    <!-- HEADER -->
+    <MudAppBar Style="background-color:#004D40;"
+               Elevation="4"
+               Fixed="true">
 
-        <article class="content px-4">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                       Style="color:#4DB6AC;"
+                       Edge="Edge.Start" />
+
+        <MudText Typo="Typo.h6" Class="ml-2" Style="color:#4DB6AC;">
+            Web Drones
+        </MudText>
+
+        <MudSpacer />
+
+        <MudIconButton Icon="@Icons.Custom.Brands.GitHub"
+                       Style="color:#4DB6AC;" />
+    </MudAppBar>
+
+    <!-- CONTENT -->
+    <MudMainContent Style="flex:1;" Class="pt-16">
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
             @Body
-        </article>
-    </main>
-</div>
+        </MudContainer>
+    </MudMainContent>
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
+    <!-- FOOTER -->
+    <MudPaper Elevation="2"
+              Class="pa-4"
+              Style="background-color:#004D40;">
+
+        <MudContainer MaxWidth="MaxWidth.Large"
+                      Style="display:flex; justify-content:space-between; align-items:center;">
+
+            <MudText Style="color:#4DB6AC;">
+                © @DateTime.Now.Year Web Drones
+            </MudText>
+
+            <MudText Style="color:#4DB6AC;">
+                Sistema de Gestión
+            </MudText>
+
+        </MudContainer>
+
+    </MudPaper>
+
+</MudLayout>

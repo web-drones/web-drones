@@ -1,4 +1,38 @@
 ﻿@page "/"
+@using MudBlazor
 
-<h3>Index</h3>
+<div style="width:100%; margin:0; padding:0;">
+    <MudCarousel Class="mud-width-full "
+                 Style="height:250px; margin:0; padding:0;"
+                 ShowArrows="true"
+                 ShowBullets="true"
+                 EnableSwipeGesture="true"
+                 AutoCycle="true"
+                 TData="object">
 
+        <MudCarouselItem Transition="Transition.Slide" Color="Color.Primary">
+            <div class="d-flex" style="height:100%">
+                <MudIcon Class="mx-auto my-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="Size.Large" />
+            </div>
+        </MudCarouselItem>
+
+        <MudCarouselItem Transition="Transition.Slide" Color="Color.Secondary">
+            <div class="d-flex" style="height:100%">
+                <MudIcon Class="mx-auto my-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="Size.Large" />
+            </div>
+        </MudCarouselItem>
+
+        <MudCarouselItem Transition="Transition.Slide">
+            <div class="d-flex" style="height:100%">
+                <MudIcon Class="mx-auto my-auto" Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Primary" Size="Size.Large" />
+            </div>
+        </MudCarouselItem>
+    </MudCarousel>
+</div>
+
+<Style>
+    .mud-carousel {
+        margin-top: 0 !important;
+        padding: 0 !important;
+    }
+</Style>

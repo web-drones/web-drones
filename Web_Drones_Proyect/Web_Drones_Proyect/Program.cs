@@ -2,6 +2,7 @@
 using MudBlazor.Services;
 using Web_Drones_Proyect.Components;
 using Web_Drones_Proyect.Data;
+using Web_Drones_Proyect.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,7 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>options.UseSqlServer(connectionString));
 builder.Services.AddMudServices();
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 var app = builder.Build();
 

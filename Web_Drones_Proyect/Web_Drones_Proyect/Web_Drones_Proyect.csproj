@@ -17,4 +17,8 @@
 	  <PackageReference Include="MudBlazor" Version="9.0.0-preview.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\drones\" />
+  </ItemGroup>
+
 </Project>

@@ -7,31 +7,45 @@
                Elevation="4"
                Fixed="true">
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Style="color:#4DB6AC;" />
-       @*  <MudIconButton Icon="@Icons.Material.Filled.Menu" Style="color:#4DB6AC;" Edge="Edge.Start" /> *@
         <MudText Typo="Typo.h6" Class="ml-2" Style="color:#4DB6AC;">Web Drones</MudText>
 
         <MudSpacer />
 
-        <!-- Botones -->
         <MudButton Variant="Variant.Text" Size="Size.Small" Style="color:#4DB6AC;" Class="mx-2" Href="#">
             Login
         </MudButton>
         <MudButton Variant="Variant.Text" Size="Size.Small" Style="color:#4DB6AC;" Class="mx-2" Href="/#">
             Registrarse
         </MudButton>
+        <MudButton OnClick="OpenAddDialog" Variant="Variant.Text" Size="Size.Small" Style="color:#4DB6AC;" Class="mx-2">
+            Agregar un Dron
+        </MudButton>
+
+        <!-- Botón Servicios con dropdown -->
+        <MudMenu Label="Servicios" Variant="Variant.Text" Class="mx-2 servicios-menu"
+                 PopoverClass="servicios-menu-popover"
+                 Style="color:#4DB6AC; font-weight:500; font-size:0.9rem;">
+
+            <MudMenuItem Style="display:block; width:100%; height:100%; background-color:#004D40; color:#4DB6AC; border:none;"
+                Href="/venta">Venta</MudMenuItem>
+
+            <MudMenuItem Style="display:block; width:100%; height:100%; background-color:#004D40; color:#4DB6AC; border:none;"
+                Href="/renta">Renta</MudMenuItem>
+        </MudMenu>
 
     </MudAppBar>
 
-    <!-- MainContent -->
     <MudMainContent Class="main-content-reset">
         @Body
     </MudMainContent>
 
-    <!-- Footer -->
     <MudPaper Elevation="2" Class="pa-4" Style="background-color:#004D40;">
         <MudContainer MaxWidth="MaxWidth.Large" Style="display:flex; justify-content:space-between; align-items:center;">
             <MudText Style="color:#4DB6AC;">© @DateTime.Now.Year Web Drones</MudText>
             <MudText Style="color:#4DB6AC;">Drones</MudText>
+            <MudButton Variant="Variant.Text" Size="Size.Small" Style="color:#4DB6AC;" Class="mx-2" Href="/About">
+                Quienes somos
+            </MudButton>
         </MudContainer>
     </MudPaper>
 
@@ -41,3 +55,20 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 <MudPopoverProvider />
+
+<style>
+    .mud-popover .mud-list
+    {
+        background-color: #004D40 !important;
+    }
+  
+    .servicios-menu .mud-button-root {
+        color: #4DB6AC !important;
+        font-weight: 500;
+    }
+
+    .servicios-menu .mud-icon-button {
+        color: #4DB6AC !important; 
+    }
+
+</style>

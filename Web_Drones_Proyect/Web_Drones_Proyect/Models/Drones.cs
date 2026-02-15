@@ -35,6 +35,9 @@ namespace Web_Drones_Proyect.Models
 
         [Column("Camara")]
         public string Camera { get; set; } = string.Empty;
+        [Column("Descripcion")]
+        [StringLength(500)]
+        public string Description { get; set; } = string.Empty;
 
         // FK a Tipo de Dron
         [Column("TipoDron_ID")]

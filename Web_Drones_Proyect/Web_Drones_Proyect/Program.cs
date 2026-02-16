@@ -15,6 +15,7 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>options.UseSqlServer(connectionString));
 builder.Services.AddMudServices();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddMudServices();
 
 var app = builder.Build();
 
@@ -30,6 +31,6 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode(); // ← ESTE ES EL CORRECTO AQUÍ
+    .AddInteractiveServerRenderMode();
 
 app.Run();

@@ -17,6 +17,7 @@ namespace Web_Drones_Proyect.Components.Pages
         [Inject] private IRepository<ImagesDrones> ImageRepository { get; set; } = default!;
 
         [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
+        [Parameter] public Drone? DroneToEdit { get; set; }
 
         private MudForm? _form;
         private Drone _drone = new();
@@ -31,31 +32,106 @@ namespace Web_Drones_Proyect.Components.Pages
             _categories = await CategoryRepository.GetAllAsync();
             _types = await TypeRepository.GetAllAsync();
 
-            _drone.State = "Disponible";
+            if (DroneToEdit != null)
+            {
+              
+                _drone = new Drone
+                {
+                    DronID = DroneToEdit.DronID,
+                    Name = DroneToEdit.Name,
+                    CategoryID = DroneToEdit.CategoryID,
+                    TypeDroneID = DroneToEdit.TypeDroneID,
+                    PriceSale = DroneToEdit.PriceSale,
+                    PriceRent = DroneToEdit.PriceRent,
+                    State = DroneToEdit.State,
+                    Stock = DroneToEdit.Stock,
+                    Autonomy = DroneToEdit.Autonomy,
+                    Scope = DroneToEdit.Scope,
+                    Camera = DroneToEdit.Camera,
+                    Description = DroneToEdit.Description,
+                    Images = DroneToEdit.Images
+                };
+
+                
+                _imagePath = DroneToEdit.Images.FirstOrDefault()?.UrlImageDron;
+            }
+            else
+            {
+                _drone.State = "Disponible";
+
+                if (_categories.Any())
+                    _drone.CategoryID = _categories.First().CategoryID;
+
+                if (_types.Any())
+                    _drone.TypeDroneID = _types.First().TypeDroneID;
+
+            }
         }
 
         private async Task Save()
         {
             await _form!.Validate();
+            if (!_form.IsValid) return;
 
-            if (!_form.IsValid)
-                return;
-
-            // 1️⃣ Guardar el dron
-            await DroneRepository.AddAsync(_drone);
-            await DroneRepository.SaveChangesAsync();
-
-            // 2️⃣ Si hay imagen, guardarla en la tabla DronImagenes
-            if (!string.IsNullOrWhiteSpace(_imagePath))
+            if (DroneToEdit == null)
             {
-                var image = new ImagesDrones
-                {
-                    DronID = _drone.DronID,
-                    UrlImageDron = _imagePath
-                };
+                Console.WriteLine($"CategoryID: {_drone.CategoryID}");
+                Console.WriteLine($"TypeDroneID: {_drone.TypeDroneID}");
 
-                await ImageRepository.AddAsync(image);
-                await ImageRepository.SaveChangesAsync();
+                await DroneRepository.AddAsync(_drone);
+                await DroneRepository.SaveChangesAsync();
+
+                if (!string.IsNullOrWhiteSpace(_imagePath))
+                {
+                    var image = new ImagesDrones
+                    {
+                        DronID = _drone.DronID,
+                        UrlImageDron = _imagePath
+                    };
+
+                    await ImageRepository.AddAsync(image);
+                    await ImageRepository.SaveChangesAsync();
+                }
+            }
+            else
+            {
+                DroneToEdit.Name = _drone.Name;
+                DroneToEdit.CategoryID = _drone.CategoryID;
+                DroneToEdit.TypeDroneID = _drone.TypeDroneID;
+                DroneToEdit.PriceSale = _drone.PriceSale;
+                DroneToEdit.PriceRent = _drone.PriceRent;
+                DroneToEdit.State = _drone.State;
+                DroneToEdit.Stock = _drone.Stock;
+                DroneToEdit.Autonomy = _drone.Autonomy;
+                DroneToEdit.Scope = _drone.Scope;
+                DroneToEdit.Camera = _drone.Camera;
+                DroneToEdit.Description = _drone.Description;
+
+                DroneRepository.Update(DroneToEdit);
+                await DroneRepository.SaveChangesAsync();
+
+                if (!string.IsNullOrWhiteSpace(_imagePath))
+                {
+                    var existingImage = DroneToEdit.Images.FirstOrDefault();
+
+                    if (existingImage != null)
+                    {
+                        existingImage.UrlImageDron = _imagePath;
+                        ImageRepository.Update(existingImage);
+                    }
+                    else
+                    {
+                        var image = new ImagesDrones
+                        {
+                            DronID = DroneToEdit.DronID,
+                            UrlImageDron = _imagePath
+                        };
+
+                        await ImageRepository.AddAsync(image);
+                    }
+
+                    await ImageRepository.SaveChangesAsync();
+                }
             }
 
             MudDialog.Close(DialogResult.Ok(true));
@@ -83,7 +159,7 @@ namespace Web_Drones_Proyect.Components.Pages
             using var stream = File.Create(filePath);
             await file.OpenReadStream().CopyToAsync(stream);
 
-            _imagePath = $"images/drones/{fileName}";
+            _imagePath = $"/images/drones/{fileName}";
         }
     }
 

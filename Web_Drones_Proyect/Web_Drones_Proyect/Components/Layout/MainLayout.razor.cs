@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using Web_Drones_Proyect.Components.Pages;
+using Web_Drones_Proyect.Components.Pages.Drones;
 
 namespace Web_Drones_Proyect.Components.Layout
 {

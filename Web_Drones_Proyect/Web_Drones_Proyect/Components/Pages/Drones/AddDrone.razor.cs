@@ -6,7 +6,7 @@ using System.Linq;
 using Web_Drones_Proyect.Data.Repositories;
 using Web_Drones_Proyect.Models;
 
-namespace Web_Drones_Proyect.Components.Pages
+namespace Web_Drones_Proyect.Components.Pages.Drones
 {
     public partial class AddDrone
     {

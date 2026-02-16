@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using Web_Drones_Proyect.Models;
 
 namespace Web_Drones_Proyect.Data.Repositories
 {

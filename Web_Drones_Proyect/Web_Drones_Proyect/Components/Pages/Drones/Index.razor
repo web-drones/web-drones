@@ -57,7 +57,12 @@
                         <MudText Typo="Typo.subtitle2" Class="mb-3">Precio Venta: @drone.PriceSale</MudText>
 
                         <div class="button-row">
-                            <MudButton Variant="Variant.Filled" Style="background-color:#4DB6AC; color:white;">Ver</MudButton>
+                            <MudButton Variant="Variant.Filled"
+                                       Style="background-color:#4DB6AC; color:white;"
+                                       OnClick="@(() => Nav.NavigateTo($"/drones/details/{drone.DronID}"))">
+                                Ver
+                            </MudButton>
+
                             <MudButton Variant="Variant.Filled"
                                        Style="background-color:black; color:white;"
                                        OnClick="@(() => EditDroneAsync(drone))">

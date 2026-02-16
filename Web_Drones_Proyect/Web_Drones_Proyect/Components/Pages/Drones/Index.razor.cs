@@ -6,12 +6,13 @@ using Web_Drones_Proyect.Components.Pages.Drones;
 using Web_Drones_Proyect.Data;
 using Web_Drones_Proyect.Models;
 
-namespace Web_Drones_Proyect.Components.Pages
+namespace Web_Drones_Proyect.Components.Pages.Drones
 {
     public partial class Index
     {
         [Inject] private ApplicationDbContext _context { get; set; } = default!;
         [Inject] private IDialogService DialogService { get; set; } = default!;
+        [Inject] private NavigationManager Nav { get; set; } = default!;
 
         private List<Drone> _drones = new();
 

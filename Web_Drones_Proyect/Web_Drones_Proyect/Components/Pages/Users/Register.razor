@@ -10,6 +10,7 @@
 
     <MudForm @ref="_form">
         <MudTextField Label="Nombre"
+            Style="background-color:aqua"
                       TValue="string"
                       Value="_user.UserName"
                       ValueChanged="@((string v) => _user.UserName = v)"

@@ -17,8 +17,7 @@ namespace Web_Drones_Proyect.Models
         public string Email { get; set; } = string.Empty;
 
         [Required]
-        [Column("PasswordHash")]
-        public string Password { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
 
         [Column("Rol_ID")]
         public int RolID { get; set; }

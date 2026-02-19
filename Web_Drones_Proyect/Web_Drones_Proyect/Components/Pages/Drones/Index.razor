@@ -1,7 +1,8 @@
 ﻿@page "/"
 @using MudBlazor
 @using Web_Drones_Proyect.Models
-
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 
 
 <!--Carrusel-->
@@ -63,18 +64,28 @@
                                 Ver
                             </MudButton>
 
-                            <MudButton Variant="Variant.Filled"
-                                       Style="background-color:black; color:white;"
-                                       OnClick="@(() => EditDroneAsync(drone))">
-                                Editar
-                            </MudButton>
+                            <AuthorizeView Roles="Admin">
+                                <Authorized>
+                                    <MudButton Variant="Variant.Filled"
+                                               Style="background-color:black; color:white;"
+                                               OnClick="@(() => EditDroneAsync(drone))">
+                                        Editar
+                                    </MudButton>
 
-                            <MudButton Variant="Variant.Filled"
-                                       Style="background-color:#ff0000; color:white;"
-                                       OnClick="@(() => DeleteDroneAsync(drone.DronID))">
-                                Borrar
-                            </MudButton>
+                                    <MudButton Variant="Variant.Filled"
+                                               Style="background-color:#ff0000; color:white;"
+                                               OnClick="@(() => DeleteDroneAsync(drone.DronID))">
+                                        Borrar
+                                    </MudButton>
+                                </Authorized>
+                                <NotAuthorized>
+                                    <MudText Style="color:red; font-size:0.9rem;">
+                                        DEBUG: No tienes permisos de admin
+                                    </MudText>
+                                </NotAuthorized>
+                            </AuthorizeView>
                         </div>
+
                     </div>
                 </div>
 

@@ -10,7 +10,6 @@
 
     <MudForm @ref="_form">
         <MudTextField Label="Nombre"
-            Style="background-color:aqua"
                       TValue="string"
                       Value="_user.UserName"
                       ValueChanged="@((string v) => _user.UserName = v)"
@@ -92,7 +91,7 @@
         {
             UserName = _user.UserName,
             Email = _user.Email,
-            Password = HashPassword(_password),
+            PasswordHash = HashPassword(_password),
             RolID = 6, // CLIENTE
             Active = true,
             RegistrationDate = DateTime.Now

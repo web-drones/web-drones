@@ -1,0 +1,75 @@
+﻿@page "/login"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Web_Drones_Proyect.Services
+@using MudBlazor
+
+<MudPaper Class="pa-6 mx-auto" Style="max-width:400px; margin-top:50px;">
+    <MudText Typo="Typo.h5" Class="mb-4">Iniciar Sesión</MudText>
+
+    <MudForm @ref="_form">
+        <MudTextField Label="Correo Electrónico"
+                      TValue="string"
+                      Value="@_email"
+                      ValueChanged="@((string v) => _email = v)"
+                      ValueExpression="@(() => _email)"
+                      Required="true" />
+
+        <MudTextField Label="Contraseña"
+                      TValue="string"
+                      InputType="InputType.Password"
+                      Value="@_password"
+                      ValueChanged="@((string v) => _password = v)"
+                      ValueExpression="@(() => _password)"
+                      Required="true" />
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Class="mt-4"
+                   OnClick="LoginAsync">
+            Entrar
+        </MudButton>
+    </MudForm>
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudText Color="Color.Error" Class="mt-2">@_errorMessage</MudText>
+    }
+</MudPaper>
+
+@code {
+    private MudForm _form = default!;
+    private string _email = string.Empty;
+    private string _password = string.Empty;
+    private string? _errorMessage;
+
+    [Inject] private AuthService AuthService { get; set; } = default!;
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+    [CascadingParameter] private Task<AuthenticationState> AuthStateTask { get; set; } = default!;
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
+
+    private async Task LoginAsync()
+    {
+
+        if (_form != null) await _form.Validate();
+
+        _errorMessage = string.Empty;
+        if (!_form.IsValid) return;
+
+        var success = await AuthService.LoginAsync(_email, _password);
+
+        if (success)
+        {
+            Snackbar.Add("Inicio de sesión exitoso ✔", Severity.Success, config =>
+            {
+                config.VisibleStateDuration = 5000;
+                config.ShowCloseIcon = true;
+            });
+
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            _errorMessage = "Correo o contraseña incorrectos.";
+        }
+    }
+}

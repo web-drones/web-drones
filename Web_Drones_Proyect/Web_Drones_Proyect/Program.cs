@@ -6,6 +6,7 @@ using MudBlazor.Services;
 using Web_Drones_Proyect.Components;
 using Web_Drones_Proyect.Data;
 using Web_Drones_Proyect.Data.Repositories;
+using Web_Drones_Proyect.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +41,10 @@ builder.Services.AddScoped<AuthService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCascadingAuthenticationState();
+
+builder.Services.AddAuthorizationCore(); 
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthService>();
 
 
 var app = builder.Build();

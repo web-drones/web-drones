@@ -4,6 +4,7 @@
 @using Web_Drones_Proyect.Models
 @using Web_Drones_Proyect.Data.Repositories
 @using MudBlazor
+@using Web_Drones_Proyect.Services
 
 <MudPaper Class="pa-6 mx-auto" Style="max-width:400px; margin-top:50px;">
     <MudText Typo="Typo.h5" Class="mb-4">Crear Cuenta</MudText>
@@ -62,9 +63,13 @@
 
     [Inject] private IRepository<User> UserRepository { get; set; } = default!;
     [Inject] private NavigationManager Navigation { get; set; } = default!;
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
+    [Inject] private AuthService AuthService { get; set; } = default!;
 
     private async Task RegisterAsync()
     {
+
+
         if (_form != null)
             await _form.Validate();
 
@@ -80,7 +85,9 @@
         }
 
         // Verificar si el correo ya existe
-        var existingUser = (await UserRepository.FindAsync(u => u.Email == _user.Email)).FirstOrDefault();
+        var existingUser = (await UserRepository.FindAsync(u => u.Email == _user.Email))
+            .FirstOrDefault();
+
         if (existingUser != null)
         {
             _errorMessage = "Este correo ya está registrado.";
@@ -100,8 +107,24 @@
         await UserRepository.AddAsync(userToSave);
         await UserRepository.SaveChangesAsync();
 
-        Navigation.NavigateTo("/login");
+        // Autologin después del registro
+        var loginSuccess = await AuthService.LoginAsync(_user.Email, _password);
+
+        if (loginSuccess)
+        {
+            Snackbar.Add(
+                $"Bienvenido {_user.UserName}, tu cuenta fue creada correctamente.",
+                Severity.Success);
+
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            Navigation.NavigateTo("/login");
+        }
     }
+
+
 
     private string HashPassword(string password)
     {

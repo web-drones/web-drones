@@ -1,71 +1,55 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
 using Web_Drones_Proyect.Data;
 using Web_Drones_Proyect.Models;
+using Microsoft.AspNetCore.Components.Authorization;
 
-public class AuthService
+namespace Web_Drones_Proyect.Services
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public AuthService(ApplicationDbContext context,
-                       IHttpContextAccessor httpContextAccessor)
+    public class AuthService
     {
-        _context = context;
-        _httpContextAccessor = httpContextAccessor;
+        private readonly ApplicationDbContext _context;
+        private readonly CustomAuthenticationStateProvider _authStateProvider;
+
+        public AuthService(ApplicationDbContext context, AuthenticationStateProvider authStateProvider)
+        {
+            _context = context;
+            _authStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
+        }
+
+        public async Task<bool> LoginAsync(string email, string password)
+        {
+            var user = await _context.Usuarios
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Email == email && u.Active);
+
+            if (user == null) return false;
+
+            var hash = HashPassword(password);
+
+            Console.WriteLine("HASH INGRESADO: " + hash);
+            Console.WriteLine("HASH BD: " + user.PasswordHash);
+
+            if (user.PasswordHash != hash) return false;
+
+            _authStateProvider.MarkUserAsAuthenticated(user);
+            return true;
+        }
+
+
+        public Task LogoutAsync()
+        {
+            _authStateProvider.MarkUserAsLoggedOut();
+            return Task.CompletedTask;
+        }
+
+        public string HashPassword(string password)
+        {
+            using var sha256 = SHA256.Create();
+            var bytes = Encoding.UTF8.GetBytes(password);
+            var hash = sha256.ComputeHash(bytes);
+            return Convert.ToBase64String(hash);
+        }
     }
-
-    public async Task<bool> LoginAsync(string email, string password)
-    {
-        var user = await _context.Usuarios
-            .Include(u => u.Role)
-            .FirstOrDefaultAsync(u => u.Email == email && u.Active);
-
-        if (user == null)
-            return false;
-
-        var hash = HashPassword(password);
-
-        if (user.PasswordHash != hash)
-            return false;
-
-        var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
-        new Claim(ClaimTypes.Name, user.UserName),
-        new Claim(ClaimTypes.Email, user.Email),
-        new Claim(ClaimTypes.Role, user.Role?.Name ?? "Cliente")
-    };
-
-        var identity = new ClaimsIdentity(claims,
-            CookieAuthenticationDefaults.AuthenticationScheme);
-
-        var principal = new ClaimsPrincipal(identity);
-
-        await _httpContextAccessor.HttpContext!
-            .SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-        return true;
-    }
-
-    public async Task LogoutAsync()
-    {
-        await _httpContextAccessor.HttpContext!
-            .SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-    }
-
-    public string HashPassword(string password)
-    {
-        using var sha256 = SHA256.Create();
-        var bytes = Encoding.UTF8.GetBytes(password);
-        var hash = sha256.ComputeHash(bytes);
-        return Convert.ToBase64String(hash);
-    }
-
-
 }

@@ -3,23 +3,25 @@
 @using Web_Drones_Proyect.Models
 @using Microsoft.AspNetCore.Components.Forms
 
-
-
+<!-- Diálogo modal para crear o editar drones -->
 <MudDialog Class="bg-dark-dialog">
 
     <DialogContent>
+        <!-- Formulario principal del dron -->
         <MudForm @ref="_form">
 
             <MudGrid>
 
-                <!-- COLUMNA IZQUIERDA -->
+                <!-- COLUMNA IZQUIERDA: datos del dron -->
                 <MudItem xs="12" md="5">
 
+                    <!-- Nombre del dron -->
                     <MudTextField @bind-Value="_drone.Name"
                                   Label="Nombre"
                                   Required="true"
                                   Class="white-text" />
 
+                    <!-- Selección de categoría -->
                     <MudSelect T="int" Label="Categoría"
                                @bind-Value="_drone.CategoryID"
                                Required="true"
@@ -30,6 +32,7 @@
                         }
                     </MudSelect>
 
+                    <!-- Tipo de dron -->
                     <MudSelect T="int" Label="Tipo de Dron"
                                @bind-Value="_drone.TypeDroneID"
                                Required="true"
@@ -40,41 +43,49 @@
                         }
                     </MudSelect>
 
+                    <!-- Precio de venta -->
                     <MudNumericField @bind-Value="_drone.PriceSale"
                                      Label="Precio Venta"
                                      T="decimal?"
                                      Class="white-text" />
 
+                    <!-- Precio de renta -->
                     <MudNumericField @bind-Value="_drone.PriceRent"
                                      Label="Precio Renta"
                                      T="decimal?"
                                      Class="white-text" />
 
+                    <!-- Estado del dron -->
                     <MudTextField @bind-Value="_drone.State"
                                   Label="Estado"
                                   Required="true"
                                   Class="white-text" />
 
+                    <!-- Cantidad disponible -->
                     <MudNumericField @bind-Value="_drone.Stock"
                                      Label="Stock"
                                      T="int"
                                      Required="true"
                                      Class="white-text" />
 
+                    <!-- Autonomía de vuelo -->
                     <MudNumericField @bind-Value="_drone.Autonomy"
                                      Label="Autonomía"
                                      T="int"
                                      Class="white-text" />
 
+                    <!-- Alcance del dron -->
                     <MudNumericField @bind-Value="_drone.Scope"
                                      Label="Alcance"
                                      T="int"
                                      Class="white-text" />
 
+                    <!-- Tipo de cámara -->
                     <MudTextField @bind-Value="_drone.Camera"
                                   Label="Cámara"
                                   Class="white-text" />
 
+                    <!-- Descripción del dron -->
                     <MudTextField @bind-Value="_drone.Description"
                                   Label="Descripción"
                                   Lines="3"
@@ -82,7 +93,7 @@
 
                 </MudItem>
 
-                <!-- COLUMNA DERECHA -->
+                <!-- COLUMNA DERECHA: carga de imagen -->
                 <MudItem xs="12" md="7">
 
                     <MudPaper Class="pa-4 image-box" Elevation="3">
@@ -91,8 +102,10 @@
                             Imagen del Dron
                         </MudText>
 
+                        <!-- Selector de archivo para subir imagen -->
                         <InputFile OnChange="UploadImage" class="mb-3" />
 
+                        <!-- Vista previa de la imagen -->
                         @if (!string.IsNullOrEmpty(_imagePath))
                         {
                             <MudImage Src="@_imagePath"
@@ -109,6 +122,7 @@
         </MudForm>
     </DialogContent>
 
+    <!-- Botones de acción del formulario -->
     <DialogActions>
         <div class="actions-container">
             <MudButton OnClick="Cancel"
@@ -128,11 +142,14 @@
 </MudDialog>
 
 <style>
+
+    /* Estilos del modal en modo oscuro */
     .bg-dark-dialog {
         background-color: #121212 !important;
         color: white !important;
     }
 
+    /* Estilo de inputs en blanco */
     .white-text input,
     .white-text textarea,
     .white-text label {
@@ -143,6 +160,7 @@
         color: white !important;
     }
 
+    /* Estilos del menú desplegable */
     .mud-popover .mud-list {
         background-color: #1e1e1e !important;
     }
@@ -152,29 +170,29 @@
         transition: background-color 0.2s ease;
     }
 
-    .mud-popover .mud-list-item.mud-selected-item {
-        color: #4DB6AC !important;
-    }
+        .mud-popover .mud-list-item.mud-selected-item {
+            color: #4DB6AC !important;
+        }
 
+        .mud-popover .mud-list-item:hover {
+            background-color: #004D40 !important;
+            color: #4DB6AC !important;
+        }
 
-    .mud-popover .mud-list-item:hover {
-        background-color: #004D40 !important;
-        color: #4DB6AC !important;
-    }
-
-
-
+    /* Título de la sección de imagen */
     .white-title {
         color: white;
         font-weight: 600;
     }
 
+    /* Contenedor de imagen */
     .image-box {
         background-color: #1e1e1e;
         border-radius: 12px;
         text-align: center;
     }
 
+    /* Imagen de preview */
     .preview-img {
         width: 100%;
         max-height: 250px;
@@ -182,7 +200,7 @@
         border-radius: 10px;
     }
 
-
+    /* Botones del diálogo */
     .actions-container {
         width: 100%;
         display: flex;
@@ -191,8 +209,8 @@
         padding: 16px 0;
     }
 
-
     .mud-dialog-titlebar-close {
         color: white !important;
     }
-    }</style>
+
+</style>

@@ -2,26 +2,41 @@
 @using MudBlazor
 @using Web_Drones_Proyect.Models
 
+<!-- Contenedor principal de la vista de detalles -->
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-10">
-@if (_drone == null)
-{
-    <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" Class="mx-auto d-block mt-10" />
-}
-else
-{
-    <MudPaper Class="details-card pa-6" Elevation="6">
 
-        <MudGrid>
+    @if (_loading)
+    {
+        <!-- Indicador de carga mientras se obtiene el dron -->
+        <MudProgressCircular Indeterminate="true"
+                             Color="Color.Primary"
+                             Size="Size.Large"
+                             Class="mx-auto d-block mt-10" />
+    }
+    else if (_drone == null)
+    {
+        <!-- Mensaje si el dron no existe -->
+        <MudAlert Severity="Severity.Error">
+            Drone no encontrado.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="details-card pa-6" Elevation="6">
 
-            <!-- GALERÍA -->
-            <MudItem xs="12" md="6">
+            <MudGrid>
+
+                <!-- IMAGEN PRINCIPAL -->
+                <MudItem xs="12" md="6">
 
                     <div class="image-wrapper">
 
+                        <!-- Imagen del dron -->
                         <MudImage Src="@(_selectedImage ?? "/images/no-image.png")"
                                   Alt="@_drone.Name"
                                   Class="main-image" />
 
+                        <!-- Descripción del dron -->
                         <div class="image-description mt-4">
                             <MudText Class="description-text">
                                 @_drone.Description
@@ -30,90 +45,96 @@ else
 
                     </div>
 
-            </MudItem>
+                </MudItem>
 
-            <!-- INFO -->
-            <MudItem xs="12" md="6">
+                <!-- INFORMACIÓN DEL DRON -->
+                <MudItem xs="12" md="6">
 
-                <div class="info-section">
+                    <div class="info-section">
 
-                    <MudText Typo="Typo.h4" Class="drone-title mb-2">
-                        @_drone.Name
-                    </MudText>
+                        <!-- Nombre del dron -->
+                        <MudText Typo="Typo.h4" Class="drone-title mb-2">
+                            @_drone.Name
+                        </MudText>
 
+                        <!-- Estado del dron -->
                         <MudChip T="string" Color="Color.Success" Variant="Variant.Filled" Class="mb-4 state-chip">
                             @_drone.State
                         </MudChip>
 
-                    <MudDivider Class="mb-4" />
+                        <MudDivider Class="mb-4" />
 
-                    <MudGrid Class="spec-grid">
+                        <!-- Especificaciones -->
+                        <MudGrid Class="spec-grid">
 
-                        <MudItem xs="6">
-                            <div class="spec-box">
-                                <MudText Typo="Typo.subtitle2">Autonomía</MudText>
-                                <MudText Typo="Typo.h6">@_drone.Autonomy min</MudText>
-                            </div>
-                        </MudItem>
+                            <MudItem xs="6">
+                                <div class="spec-box">
+                                    <MudText Typo="Typo.subtitle2">Autonomía</MudText>
+                                    <MudText Typo="Typo.h6">@_drone.Autonomy min</MudText>
+                                </div>
+                            </MudItem>
 
-                        <MudItem xs="6">
-                            <div class="spec-box">
-                                <MudText Typo="Typo.subtitle2">Alcance</MudText>
-                                <MudText Typo="Typo.h6">@_drone.Scope km</MudText>
-                            </div>
-                        </MudItem>
+                            <MudItem xs="6">
+                                <div class="spec-box">
+                                    <MudText Typo="Typo.subtitle2">Alcance</MudText>
+                                    <MudText Typo="Typo.h6">@_drone.Scope km</MudText>
+                                </div>
+                            </MudItem>
 
-                        <MudItem xs="6">
-                            <div class="spec-box">
-                                <MudText Typo="Typo.subtitle2">Cámara</MudText>
-                                <MudText Typo="Typo.h6">@_drone.Camera</MudText>
-                            </div>
-                        </MudItem>
+                            <MudItem xs="6">
+                                <div class="spec-box">
+                                    <MudText Typo="Typo.subtitle2">Cámara</MudText>
+                                    <MudText Typo="Typo.h6">@_drone.Camera</MudText>
+                                </div>
+                            </MudItem>
 
-                        <MudItem xs="6">
-                            <div class="spec-box">
-                                <MudText Typo="Typo.subtitle2">Stock</MudText>
-                                <MudText Typo="Typo.h6">@_drone.Stock</MudText>
-                            </div>
-                        </MudItem>
+                            <MudItem xs="6">
+                                <div class="spec-box">
+                                    <MudText Typo="Typo.subtitle2">Stock</MudText>
+                                    <MudText Typo="Typo.h6">@_drone.Stock</MudText>
+                                </div>
+                            </MudItem>
 
-                    </MudGrid>
+                        </MudGrid>
 
-                    <MudDivider Class="my-6" />
+                        <MudDivider Class="my-6" />
 
-                    <div class="price-section">
+                        <!-- Precios -->
+                        <div class="price-section">
 
-                        @if (_drone.PriceSale.HasValue)
-                        {
-                            <MudText Typo="Typo.h5" Class="price-sale">
-                                Venta: $@_drone.PriceSale
-                            </MudText>
-                        }
+                            @if (_drone.PriceSale.HasValue)
+                            {
+                                <MudText Typo="Typo.h5" Class="price-sale">
+                                    Venta: @_drone.PriceSale?.ToString("C")
+                                </MudText>
+                            }
 
-                        @if (_drone.PriceRent.HasValue)
-                        {
-                            <MudText Typo="Typo.h6" Class="price-rent">
-                                Renta: $@_drone.PriceRent / día
-                            </MudText>
-                        }
+                            @if (_drone.PriceRent.HasValue)
+                            {
+                                <MudText Typo="Typo.h6" Class="price-rent">
+                                    Renta: @_drone.PriceRent?.ToString("C") / día
+                                </MudText>
+                            }
+
+                        </div>
+
+                        <!-- Botón carrito -->
+                        <MudButton Variant="Variant.Filled"
+                                   Class="add-cart-btn mt-6"
+                                   StartIcon="@Icons.Material.Filled.ShoppingCart">
+                            Añadir al carrito
+                        </MudButton>
 
                     </div>
 
-                    <MudButton Variant="Variant.Filled"
-                               Class="add-cart-btn mt-6"
-                               StartIcon="@Icons.Material.Filled.ShoppingCart">
-                        Añadir al carrito
-                    </MudButton>
+                </MudItem>
 
-                </div>
+            </MudGrid>
 
-            </MudItem>
+        </MudPaper>
+    }
 
-        </MudGrid>
-
-    </MudPaper>
-}
-</MudContainer> 
+</MudContainer>
 
 <style>
     .details-card {

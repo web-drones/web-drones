@@ -4,8 +4,9 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 
-
-<!--Carrusel-->
+<!-- ===================== -->
+<!-- Carrusel principal -->
+<!-- ===================== -->
 <div style="width:100%; margin:0; padding:0;">
     <MudCarousel Class="mud-width-full"
                  Style="height:450px; margin:0; padding:0;"
@@ -15,35 +16,48 @@
                  AutoCycle="true"
                  TData="object">
 
+        <!-- Slide 1 -->
         <MudCarouselItem Transition="Transition.Slide" Color="Color.Primary">
             <div class="d-flex" style="height:100%">
                 <MudIcon Class="mx-auto my-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="Size.Large" />
             </div>
         </MudCarouselItem>
 
+        <!-- Slide 2 -->
         <MudCarouselItem Transition="Transition.Slide" Color="Color.Secondary">
             <div class="d-flex" style="height:100%">
                 <MudIcon Class="mx-auto my-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="Size.Large" />
             </div>
         </MudCarouselItem>
 
+        <!-- Slide 3 -->
         <MudCarouselItem Transition="Transition.Slide">
             <div class="d-flex" style="height:100%">
                 <MudIcon Class="mx-auto my-auto" Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Primary" Size="Size.Large" />
             </div>
         </MudCarouselItem>
+
     </MudCarousel>
 </div>
 
-<!--tarjetas-->
+<!-- ===================== -->
+<!-- Lista de drones -->
+<!-- ===================== -->
 <MudContainer Class="mt-10 d-flex flex-column align-items-center">
+
+    <!-- Itera todos los drones obtenidos desde la base de datos -->
     @for (int i = 0; i < _drones.Count; i++)
     {
         var drone = _drones[i];
+
+        // Alterna la posición de la imagen (izquierda / derecha)
         bool imageLeft = i % 2 == 0;
 
         <MudPaper Class="drone-card mb-4" Elevation="2">
+
             <div class="drone-row-card">
+
+                <!-- Imagen a la izquierda -->
                 @if (imageLeft)
                 {
                     <MudImage Src="@(drone.Images.FirstOrDefault()?.UrlImageDron ?? "/images/no-image.png")"
@@ -51,51 +65,79 @@
                               Class="drone-image" />
                 }
 
+                <!-- Información del dron -->
                 <div class="drone-info @(imageLeft ? "drone-info-right" : "drone-info-left")">
-                    <div class="drone-info-content">
-                        <MudText Typo="Typo.h5" Class="mb-3">@drone.Name</MudText>
-                        <MudText Typo="Typo.body2" Class="mb-3">@drone.Description</MudText>
-                        <MudText Typo="Typo.subtitle2" Class="mb-3">Precio Venta: @drone.PriceSale</MudText>
 
+                    <div class="drone-info-content">
+
+                        <!-- Nombre -->
+                        <MudText Typo="Typo.h5" Class="mb-3">@drone.Name</MudText>
+
+                        <!-- Descripción -->
+                        <MudText Typo="Typo.body2" Class="mb-3">@drone.Description</MudText>
+
+                        <!-- Precio -->
+                        <MudText Typo="Typo.subtitle2" Class="mb-3">
+                            Precio Venta: @drone.PriceSale
+                        </MudText>
+
+                        <!-- Botones de acciones -->
                         <div class="button-row">
+
+                            <!-- Navega a la página de detalles -->
                             <MudButton Variant="Variant.Filled"
                                        Style="background-color:#4DB6AC; color:white;"
                                        OnClick="@(() => Nav.NavigateTo($"/drones/details/{drone.DronID}"))">
                                 Ver
                             </MudButton>
 
+                            <!-- Opciones solo visibles para ADMIN -->
                             <AuthorizeView Roles="ADMIN">
+
                                 <Authorized>
+
+                                    <!-- Editar dron -->
                                     <MudButton Variant="Variant.Filled"
                                                Style="background-color:black; color:white;"
                                                OnClick="@(() => EditDroneAsync(drone))">
                                         Editar
                                     </MudButton>
 
+                                    <!-- Eliminar dron -->
                                     <MudButton Variant="Variant.Filled"
                                                Style="background-color:#ff0000; color:white;"
                                                OnClick="@(() => DeleteDroneAsync(drone.DronID))">
                                         Borrar
                                     </MudButton>
+
                                 </Authorized>
+
                             </AuthorizeView>
+
                         </div>
 
                     </div>
+
                 </div>
 
+                <!-- Imagen a la derecha -->
                 @if (!imageLeft)
                 {
                     <MudImage Src="@(drone.Images.FirstOrDefault()?.UrlImageDron ?? "/images/no-image.png")"
                               Alt="@drone.Name"
                               Class="drone-image" />
                 }
+
             </div>
+
         </MudPaper>
     }
+
 </MudContainer>
 
 <style>
+
+    /* Tarjeta contenedora del dron */
     .drone-card {
         width: 80%;
         border-radius: 12px;
@@ -105,12 +147,13 @@
         background-color: #ffffff;
     }
 
+        /* Efecto hover */
         .drone-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
 
-
+    /* Layout horizontal de la tarjeta */
     .drone-row-card {
         display: flex;
         flex-direction: row;
@@ -118,7 +161,7 @@
         align-items: stretch;
     }
 
-   
+    /* Imagen del dron */
     .drone-image {
         width: 50%;
         height: 100%;
@@ -128,10 +171,12 @@
         transition: transform 0.3s;
     }
 
+        /* Zoom suave al pasar el mouse */
         .drone-image:hover {
             transform: scale(1.05);
         }
 
+    /* Contenedor de información */
     .drone-info {
         display: flex;
         width: 50%;
@@ -147,6 +192,7 @@
         height: 100%;
     }
 
+    /* Estilo del título */
     .drone-info h5 {
         font-size: 1.8rem;
         font-weight: 700;
@@ -172,6 +218,7 @@
         margin-bottom: 20px;
     }
 
+    /* Contenedor de botones */
     .button-row {
         display: flex;
         gap: 10px;
@@ -179,6 +226,7 @@
         justify-content: center;
     }
 
+    /* Alineación del contenido */
     .drone-info-left {
         align-items: flex-start;
         text-align: left;
@@ -189,7 +237,8 @@
         text-align: right;
     }
 
-    /* Las media siempre deben tener doble arroba (ALT 64) por un bugg de Blazor en el Dom */
+    /* Responsive para móviles */
+    /* Las media siempre deben tener doble arroba (ALT 64) por un bug de Blazor */
     @@media (max-width: 768px) {
 
         .drone-row-card {
@@ -199,7 +248,7 @@
 
         .drone-image {
             width: 100%;
-            height: 250px; 
+            height: 250px;
         }
 
         .drone-info {
@@ -224,4 +273,5 @@
             font-size: 0.95rem;
         }
     }
+
 </style>

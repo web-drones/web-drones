@@ -6,21 +6,37 @@
 @using MudBlazor
 @using Web_Drones_Proyect.Services
 
+<!-- ===================== -->
+<!-- Contenedor principal de registro -->
+<!-- ===================== -->
 <div class="auth-bg">
     <div class="auth-shell">
+
+        <!-- Tarjeta del formulario -->
         <div class="auth-card">
 
+            <!-- Identidad / marca del sistema -->
             <div class="brand-row">
                 <div class="brand-badge">Aero Santo Domingo</div>
                 <div class="brand-dot" aria-hidden="true"></div>
             </div>
 
-            <MudText Typo="Typo.h4" Class="auth-title">Crear Cuenta</MudText>
+            <!-- Título -->
+            <MudText Typo="Typo.h4" Class="auth-title">
+                Crear Cuenta
+            </MudText>
+
+            <!-- Subtítulo -->
             <MudText Typo="Typo.body2" Class="auth-subtitle">
                 Completa tus datos para registrarte.
             </MudText>
 
+            <!-- ===================== -->
+            <!-- Formulario de registro -->
+            <!-- ===================== -->
             <MudForm @ref="_form" Class="auth-form">
+
+                <!-- Nombre de usuario -->
                 <MudTextField Label="Nombre"
                               TValue="string"
                               Value="_user.UserName"
@@ -30,6 +46,7 @@
                               Variant="Variant.Outlined"
                               Class="auth-input" />
 
+                <!-- Correo electrónico -->
                 <MudTextField Label="Correo Electrónico"
                               TValue="string"
                               Value="_user.Email"
@@ -39,6 +56,7 @@
                               Variant="Variant.Outlined"
                               Class="auth-input" />
 
+                <!-- Contraseña -->
                 <MudTextField Label="Contraseña"
                               TValue="string"
                               InputType="InputType.Password"
@@ -49,6 +67,7 @@
                               Variant="Variant.Outlined"
                               Class="auth-input" />
 
+                <!-- Confirmación de contraseña -->
                 <MudTextField Label="Confirmar Contraseña"
                               TValue="string"
                               InputType="InputType.Password"
@@ -59,11 +78,16 @@
                               Variant="Variant.Outlined"
                               Class="auth-input" />
 
-                <MudButton Class="auth-btn" OnClick="RegisterAsync" FullWidth="true">
+                <!-- Botón de registro -->
+                <MudButton Class="auth-btn"
+                           OnClick="RegisterAsync"
+                           FullWidth="true">
                     Registrarse
                 </MudButton>
+
             </MudForm>
 
+            <!-- Mensaje de error -->
             @if (!string.IsNullOrEmpty(_errorMessage))
             {
                 <MudAlert Severity="Severity.Error" Dense="true" Class="auth-alert">
@@ -71,6 +95,7 @@
                 </MudAlert>
             }
 
+            <!-- Enlace para iniciar sesión -->
             <div class="auth-foot">
                 <span>¿Ya tienes cuenta?</span>
                 <a class="auth-link" href="/login">Iniciar sesión</a>
@@ -326,19 +351,37 @@
 </style>
 
 @code {
+
+    // Referencia al formulario MudBlazor
     private MudForm _form = default!;
+
+    // Modelo temporal del usuario
     private UserEntity _user = new();
+
+    // Campos de contraseña
     private string _password = string.Empty;
     private string _confirmPassword = string.Empty;
+
+    // Mensaje de error mostrado al usuario
     private string? _errorMessage;
 
+    // Repositorio para acceso a usuarios en la base de datos
     [Inject] private IRepository<User> UserRepository { get; set; } = default!;
+
+    // Servicio de navegación entre páginas
     [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    // Notificaciones tipo snackbar
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
+
+    // Servicio de autenticación
     [Inject] private AuthService AuthService { get; set; } = default!;
 
+
+    // Método principal para registrar un usuario
     private async Task RegisterAsync()
     {
+        // Valida el formulario
         if (_form != null)
             await _form.Validate();
 
@@ -347,12 +390,14 @@
         if (!_form.IsValid)
             return;
 
+        // Verifica que las contraseñas coincidan
         if (_password != _confirmPassword)
         {
             _errorMessage = "Las contraseñas no coinciden.";
             return;
         }
 
+        // Verifica si el correo ya existe
         var existingUser = (await UserRepository.FindAsync(u => u.Email == _user.Email))
             .FirstOrDefault();
 
@@ -362,19 +407,22 @@
             return;
         }
 
+        // Crea el usuario que se guardará en la base de datos
         var userToSave = new User
         {
             UserName = _user.UserName,
             Email = _user.Email,
             PasswordHash = HashPassword(_password),
-            RolID = 6,
+            RolID = 6, // rol por defecto para nuevos usuarios
             Active = true,
             RegistrationDate = DateTime.Now
         };
 
+        // Guarda el usuario
         await UserRepository.AddAsync(userToSave);
         await UserRepository.SaveChangesAsync();
 
+        // Intenta iniciar sesión automáticamente
         var loginSuccess = await AuthService.LoginAsync(_user.Email, _password);
 
         if (loginSuccess)
@@ -388,6 +436,8 @@
         }
     }
 
+
+    // Genera el hash de la contraseña usando SHA256
     private string HashPassword(string password)
     {
         using var sha256 = SHA256.Create();
@@ -395,4 +445,5 @@
         var hash = sha256.ComputeHash(bytes);
         return Convert.ToBase64String(hash);
     }
+
 }

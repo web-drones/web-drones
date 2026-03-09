@@ -3,21 +3,37 @@
 @using Web_Drones_Proyect.Services
 @using MudBlazor
 
+<!-- ===================== -->
+<!-- Contenedor principal de autenticación -->
+<!-- ===================== -->
 <div class="auth-bg">
     <div class="auth-shell">
+
+        <!-- Tarjeta del formulario de login -->
         <div class="auth-card">
 
+            <!-- Marca / Identidad del sistema -->
             <div class="brand-row">
                 <div class="brand-badge">Aero Santo Domingo</div>
                 <div class="brand-dot" aria-hidden="true"></div>
             </div>
 
-            <MudText Typo="Typo.h4" Class="auth-title">Iniciar Sesion</MudText>
+            <!-- Título -->
+            <MudText Typo="Typo.h4" Class="auth-title">
+                Iniciar Sesion
+            </MudText>
+
+            <!-- Subtítulo -->
             <MudText Typo="Typo.body2" Class="auth-subtitle">
                 Inicia sesión para continuar.
             </MudText>
 
+            <!-- ===================== -->
+            <!-- Formulario de login -->
+            <!-- ===================== -->
             <MudForm @ref="_form" Class="auth-form">
+
+                <!-- Campo correo -->
                 <MudTextField Label="Correo Electrónico"
                               TValue="string"
                               Value="@_email"
@@ -27,6 +43,7 @@
                               Variant="Variant.Outlined"
                               Class="auth-input" />
 
+                <!-- Campo contraseña -->
                 <MudTextField Label="Contraseña"
                               TValue="string"
                               InputType="InputType.Password"
@@ -37,11 +54,16 @@
                               Variant="Variant.Outlined"
                               Class="auth-input" />
 
-                <MudButton Class="auth-btn" OnClick="LoginAsync" FullWidth="true">
+                <!-- Botón de inicio de sesión -->
+                <MudButton Class="auth-btn"
+                           OnClick="LoginAsync"
+                           FullWidth="true">
                     Entrar
                 </MudButton>
+
             </MudForm>
 
+            <!-- Mensaje de error si el login falla -->
             @if (!string.IsNullOrEmpty(_errorMessage))
             {
                 <MudAlert Severity="Severity.Error" Dense="true" Class="auth-alert">
@@ -49,16 +71,22 @@
                 </MudAlert>
             }
 
+            <!-- Enlace para registro -->
             <div class="auth-foot">
                 <span>¿No tienes cuenta?</span>
                 <a class="auth-link" href="/register">Crear cuenta</a>
             </div>
 
         </div>
+
     </div>
 </div>
 
 <style>
+
+    /* ===================== */
+    /* Variables de color del tema */
+    /* ===================== */
     :root {
         --teal-0: #E0F2F1;
         --teal-1: #B2DFDB;
@@ -75,7 +103,7 @@
         --shadow: rgba(0,77,64,.18);
     }
 
-    /* Premium light background (SaaS) */
+    /* Fondo principal con gradientes */
     .auth-bg {
         min-height: calc(100vh - 64px);
         padding: 3.2rem 1rem;
@@ -86,7 +114,7 @@
         overflow: hidden;
     }
 
-        /* Soft animated blobs */
+        /* Elementos decorativos animados */
         .auth-bg::before,
         .auth-bg::after {
             content: "";
@@ -113,6 +141,7 @@
             animation-delay: 1.6s;
         }
 
+    /* Contenedor del login */
     .auth-shell {
         width: 100%;
         max-width: 460px;
@@ -120,6 +149,7 @@
         z-index: 1;
     }
 
+    /* Tarjeta principal */
     .auth-card {
         border-radius: 22px;
         padding: 2rem 2rem 1.3rem;
@@ -134,7 +164,7 @@
         overflow: hidden;
     }
 
-        /* Top sheen */
+        /* Decoración superior */
         .auth-card::before {
             content: "";
             position: absolute;
@@ -144,6 +174,7 @@
             pointer-events: none;
         }
 
+    /* Encabezado de marca */
     .brand-row {
         display: flex;
         align-items: center;
@@ -151,6 +182,7 @@
         margin-bottom: .9rem;
     }
 
+    /* Badge de marca */
     .brand-badge {
         width: fit-content;
         padding: .38rem .75rem;
@@ -164,6 +196,7 @@
         opacity: 0;
     }
 
+    /* Indicador animado */
     .brand-dot {
         width: 10px;
         height: 10px;
@@ -173,6 +206,7 @@
         animation: pulse 2.2s ease-in-out infinite;
     }
 
+    /* Título */
     .auth-title {
         color: var(--ink);
         font-weight: 950;
@@ -182,6 +216,7 @@
         opacity: 0;
     }
 
+    /* Subtítulo */
     .auth-subtitle {
         color: var(--muted);
         margin-top: .35rem;
@@ -189,6 +224,7 @@
         opacity: 0;
     }
 
+    /* Formulario */
     .auth-form {
         margin-top: 1.25rem;
         display: grid;
@@ -197,7 +233,7 @@
         opacity: 0;
     }
 
-    /* Inputs (MudBlazor outlined) premium */
+    /* Estilos de inputs */
     .auth-input .mud-input-control {
         border-radius: 14px;
         background: rgba(255,255,255,.75);
@@ -211,16 +247,7 @@
         border-color: rgba(0,150,136,.35) !important;
     }
 
-    .auth-input .mud-input-label {
-        color: rgba(8,59,51,.62) !important;
-        font-weight: 650;
-    }
-
-    .auth-input input {
-        color: var(--ink) !important;
-        font-weight: 650;
-    }
-
+    /* Botón login */
     .auth-btn {
         margin-top: .35rem;
         border-radius: 14px;
@@ -239,16 +266,12 @@
             filter: saturate(1.05);
         }
 
-        .auth-btn:active {
-            transform: translateY(0px);
-            box-shadow: 0 10px 18px rgba(0,77,64,.20);
-        }
-
     .auth-alert {
         margin-top: 1rem;
         border-radius: 14px;
     }
 
+    /* Footer */
     .auth-foot {
         margin-top: 1.15rem;
         display: flex;
@@ -264,10 +287,11 @@
         text-decoration: none;
     }
 
-        .auth-link:hover {
-            text-decoration: underline;
-        }
+    .auth-link:hover {
+        text-decoration: underline;
+    }
 
+    /* Animación de entrada del card */
     @@keyframes fadeUp {
         from {
             opacity: 0;
@@ -280,6 +304,7 @@
         }
     }
 
+    /* Animación de blobs del fondo */
     @@keyframes floatBlob {
         0% {
             transform: translateY(0px);
@@ -294,6 +319,7 @@
         }
     }
 
+    /* Animación del punto verde */
     @@keyframes pulse {
         0%, 100% {
             transform: scale(1);
@@ -305,40 +331,63 @@
             box-shadow: 0 0 0 10px rgba(29,233,182,.14);
         }
     }
+
 </style>
 
 @code {
+
+    // Referencia al formulario MudBlazor
     private MudForm _form = default!;
+
+    // Campos del formulario
     private string _email = string.Empty;
     private string _password = string.Empty;
+
+    // Mensaje de error mostrado al usuario
     private string? _errorMessage;
 
+    // Servicio de autenticación
     [Inject] private AuthService AuthService { get; set; } = default!;
+
+    // Servicio de navegación
     [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    // Estado de autenticación actual
     [CascadingParameter] private Task<AuthenticationState> AuthStateTask { get; set; } = default!;
+
+    // Notificaciones tipo snackbar
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
+
+    // Método que ejecuta el proceso de login
     private async Task LoginAsync()
     {
+        // Valida el formulario
         if (_form != null) await _form.Validate();
 
         _errorMessage = string.Empty;
+
+        // Si el formulario no es válido, detiene el proceso
         if (!_form.IsValid) return;
 
+        // Intenta autenticar al usuario
         var success = await AuthService.LoginAsync(_email, _password);
 
         if (success)
         {
+            // Notificación de éxito
             Snackbar.Add("Inicio de sesión exitoso ✔", Severity.Success, config =>
             {
                 config.VisibleStateDuration = 5000;
                 config.ShowCloseIcon = true;
             });
 
+            // Redirige a la página principal
             Navigation.NavigateTo("/");
         }
         else
         {
+            // Mensaje si las credenciales son incorrectas
             _errorMessage = "Correo o contraseña incorrectos.";
         }
     }

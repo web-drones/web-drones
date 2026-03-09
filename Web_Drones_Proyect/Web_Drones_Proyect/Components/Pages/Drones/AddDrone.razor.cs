@@ -8,25 +8,38 @@ using Web_Drones_Proyect.Models;
 
 namespace Web_Drones_Proyect.Components.Pages.Drones
 {
+    // Lógica del diálogo para crear o editar drones
     public partial class AddDrone
     {
+        // Entorno del servidor (para acceder a wwwroot)
         [Inject] private IWebHostEnvironment Env { get; set; } = default!;
+
+        // Repositorios para acceso a datos
         [Inject] private IRepository<Drone> DroneRepository { get; set; } = default!;
         [Inject] private IRepository<Category> CategoryRepository { get; set; } = default!;
         [Inject] private IRepository<TypeDrones> TypeRepository { get; set; } = default!;
         [Inject] private IRepository<ImagesDrones> ImageRepository { get; set; } = default!;
 
+        // Instancia del diálogo MudBlazor
         [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
+
+        // Drone recibido cuando se está editando
         [Parameter] public Drone? DroneToEdit { get; set; }
 
+        // Referencia al formulario
         private MudForm? _form;
+
+        // Modelo del dron en edición
         private Drone _drone = new();
 
+        // Listas para los selectores
         private IEnumerable<Category> _categories = new List<Category>();
         private IEnumerable<TypeDrones> _types = new List<TypeDrones>();
 
+        // Ruta de la imagen seleccionada
         private string? _imagePath;
 
+        // Inicializa datos necesarios del formulario
         protected override async Task OnInitializedAsync()
         {
             _categories = await CategoryRepository.GetAllAsync();
@@ -34,7 +47,7 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
 
             if (DroneToEdit != null)
             {
-              
+                // Copia los datos del dron a editar
                 _drone = new Drone
                 {
                     DronID = DroneToEdit.DronID,
@@ -52,11 +65,12 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
                     Images = DroneToEdit.Images
                 };
 
-                
+                // Obtiene la imagen existente
                 _imagePath = DroneToEdit.Images.FirstOrDefault()?.UrlImageDron;
             }
             else
             {
+                // Valores por defecto al crear un nuevo dron
                 _drone.State = "Disponible";
 
                 if (_categories.Any())
@@ -64,10 +78,10 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
 
                 if (_types.Any())
                     _drone.TypeDroneID = _types.First().TypeDroneID;
-
             }
         }
 
+        // Guarda el dron (crear o actualizar)
         private async Task Save()
         {
             await _form!.Validate();
@@ -75,12 +89,11 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
 
             if (DroneToEdit == null)
             {
-                Console.WriteLine($"CategoryID: {_drone.CategoryID}");
-                Console.WriteLine($"TypeDroneID: {_drone.TypeDroneID}");
-
+                // Crear nuevo dron
                 await DroneRepository.AddAsync(_drone);
                 await DroneRepository.SaveChangesAsync();
 
+                // Guardar imagen asociada
                 if (!string.IsNullOrWhiteSpace(_imagePath))
                 {
                     var image = new ImagesDrones
@@ -95,6 +108,7 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
             }
             else
             {
+                // Actualizar dron existente
                 DroneToEdit.Name = _drone.Name;
                 DroneToEdit.CategoryID = _drone.CategoryID;
                 DroneToEdit.TypeDroneID = _drone.TypeDroneID;
@@ -110,6 +124,7 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
                 DroneRepository.Update(DroneToEdit);
                 await DroneRepository.SaveChangesAsync();
 
+                // Actualiza o crea la imagen del dron
                 if (!string.IsNullOrWhiteSpace(_imagePath))
                 {
                     var existingImage = DroneToEdit.Images.FirstOrDefault();
@@ -134,33 +149,38 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
                 }
             }
 
+            // Cierra el diálogo indicando éxito
             MudDialog.Close(DialogResult.Ok(true));
         }
 
+        // Cancela el diálogo
         private void Cancel()
         {
             MudDialog.Cancel();
         }
 
+        // Maneja la carga de imagen del dron
         private async Task UploadImage(InputFileChangeEventArgs e)
         {
             var file = e.File;
             if (file == null)
                 return;
 
+            // Carpeta donde se guardarán las imágenes
             var uploadsFolder = Path.Combine(Env.WebRootPath, "images", "drones");
 
             if (!Directory.Exists(uploadsFolder))
                 Directory.CreateDirectory(uploadsFolder);
 
+            // Genera nombre único para el archivo
             var fileName = $"{Guid.NewGuid()}_{file.Name}";
             var filePath = Path.Combine(uploadsFolder, fileName);
 
             using var stream = File.Create(filePath);
             await file.OpenReadStream().CopyToAsync(stream);
 
+            // Ruta pública de la imagen
             _imagePath = $"/images/drones/{fileName}";
         }
     }
-
 }

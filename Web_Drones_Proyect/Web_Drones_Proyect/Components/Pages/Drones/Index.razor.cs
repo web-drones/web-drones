@@ -1,21 +1,27 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
-using MudBlazor.Services;
-using Web_Drones_Proyect.Components.Pages.Drones;
 using Web_Drones_Proyect.Data;
 using Web_Drones_Proyect.Models;
 
 namespace Web_Drones_Proyect.Components.Pages.Drones
 {
+    // Componente que muestra la lista de drones en la página principal
     public partial class Index
     {
+        // Contexto de base de datos
         [Inject] private ApplicationDbContext _context { get; set; } = default!;
+
+        // Servicio para mostrar diálogos
         [Inject] private IDialogService DialogService { get; set; } = default!;
+
+        // Navegación entre páginas
         [Inject] private NavigationManager Nav { get; set; } = default!;
 
+        // Lista de drones mostrados en la vista
         private List<Drone> _drones = new();
 
+        // Carga los drones al iniciar el componente
         protected override async Task OnInitializedAsync()
         {
             _drones = await _context.Drones
@@ -23,12 +29,13 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
                 .ToListAsync();
         }
 
+        // Abre el diálogo para editar un dron
         private async Task EditDroneAsync(Drone drone)
         {
             var parameters = new DialogParameters
-    {
-        { "DroneToEdit", drone }
-    };
+            {
+                { "DroneToEdit", drone }
+            };
 
             var options = new DialogOptions
             {
@@ -40,6 +47,7 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
             var dialog = await DialogService.ShowAsync<AddDrone>("Editar Dron", parameters);
             var result = await dialog.Result;
 
+            // Si se guardaron cambios, recarga la lista
             if (!result.Canceled)
             {
                 _drones = await _context.Drones.Include(d => d.Images).ToListAsync();
@@ -47,6 +55,7 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
             }
         }
 
+        // Elimina un dron y sus imágenes del sistema
         private async Task DeleteDroneAsync(int droneId)
         {
             var drone = await _context.Drones
@@ -55,17 +64,25 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
 
             if (drone != null)
             {
-                
+                // Elimina archivos físicos de las imágenes
                 foreach (var img in drone.Images)
                 {
-                    var filePath = Path.Combine(Environment.CurrentDirectory, "wwwroot", "images", "drones", Path.GetFileName(img.UrlImageDron));
+                    var filePath = Path.Combine(
+                        Environment.CurrentDirectory,
+                        "wwwroot",
+                        "images",
+                        "drones",
+                        Path.GetFileName(img.UrlImageDron));
+
                     if (File.Exists(filePath))
                         File.Delete(filePath);
                 }
 
+                // Elimina el dron de la base de datos
                 _context.Drones.Remove(drone);
                 await _context.SaveChangesAsync();
 
+                // Recarga la lista de drones
                 _drones = await _context.Drones.Include(d => d.Images).ToListAsync();
                 StateHasChanged();
             }

@@ -20,16 +20,22 @@ namespace Web_Drones_Proyect.Services
         public void MarkUserAsAuthenticated(User user)
         {
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role?.Name ?? "Cliente")
-            };
+{
+    new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
+    new Claim(ClaimTypes.Name, user.UserName),
+    new Claim(ClaimTypes.Email, user.Email),
+    // Asegúrate de usar ClaimTypes.Role
+    new Claim(ClaimTypes.Role, user.Role?.Name ?? "Cliente")
+};
 
-            var identity = new ClaimsIdentity(claims, "apiauth_type");
+            var identity = new ClaimsIdentity(
+                claims,
+                "apiauth_type",
+                ClaimsIdentity.DefaultNameClaimType,
+                ClaimsIdentity.DefaultRoleClaimType // <- Esto es importante
+            );
+
             _currentUser = new ClaimsPrincipal(identity);
-
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_currentUser)));
         }
 

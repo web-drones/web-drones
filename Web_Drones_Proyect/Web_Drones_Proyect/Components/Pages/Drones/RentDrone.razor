@@ -1,0 +1,375 @@
+﻿@page "/renta"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using MudBlazor
+@using Web_Drones_Proyect.Data
+@using Web_Drones_Proyect.Models
+@using Microsoft.AspNetCore.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@using System.Security.Claims
+
+<AuthorizeView>
+    <Authorized>
+        <MudText Color="Color.Success">AUTORIZADO</MudText>
+    </Authorized>
+    <NotAuthorized>
+        <MudText Color="Color.Error">NO AUTORIZADO</MudText>
+    </NotAuthorized>
+</AuthorizeView>
+
+<AuthorizeView Roles="ADMIN">
+    <Authorized>
+        <MudText Color="Color.Primary">SOY ADMIN</MudText>
+    </Authorized>
+</AuthorizeView>
+
+<MudText>
+    Roles actuales: @string.Join(", ", _user?.Claims
+        .Where(c => c.Type == ClaimTypes.Role)
+        .Select(c => c.Value) ?? new List<string>())
+</MudText>
+
+<MudContainer Class="mt-10 d-flex flex-column align-items-center">
+
+    <MudText Typo="Typo.h3" Class="renta-title mb-8">
+        DRONES DE RENTA
+    </MudText>
+
+    <!-- Itera todos los drones obtenidos desde la base de datos -->
+    @for (int i = 0; i < _drones.Count; i++)
+    {
+        var drone = _drones[i];
+
+        // Alterna la posición de la imagen (izquierda / derecha)
+        bool imageLeft = i % 2 == 0;
+
+        <MudPaper Class="drone-card mb-4" Elevation="2">
+
+            <div class="drone-row-card">
+
+                <!-- Imagen a la izquierda -->
+                @if (imageLeft)
+                {
+                    <MudImage Src="@(drone.Images.FirstOrDefault()?.UrlImageDron ?? "/images/no-image.png")"
+                              Alt="@drone.Name"
+                              Class="drone-image" />
+                }
+
+                <!-- Información del dron -->
+                <div class="drone-info @(imageLeft ? "drone-info-right" : "drone-info-left")">
+
+                    <div class="drone-info-content">
+
+                        <!-- Nombre -->
+                        <MudText Typo="Typo.h5" Class="mb-3">@drone.Name</MudText>
+
+                        <!-- Descripción -->
+                        <MudText Typo="Typo.body2" Class="mb-3">@drone.Description</MudText>
+
+                        <!-- Precio -->
+                        <MudText Typo="Typo.subtitle2" Class="mb-3">
+                            Precio de renta: @drone.PriceSale
+                        </MudText>
+
+                        <!-- Botones de acciones -->
+                        <div class="button-row">
+
+                            <!-- Navega a la página de detalles -->
+                            <MudButton Variant="Variant.Filled"
+                                       Style="background-color:#4DB6AC; color:white;"
+                                       OnClick="@(() => Nav.NavigateTo($"/drones/details/{drone.DronID}"))">
+                                Ver
+                            </MudButton>
+
+                            <!-- Opciones solo visibles para ADMIN -->
+                            <AuthorizeView Roles="ADMIN">
+
+                                <Authorized>
+
+                                    <!-- Editar dron -->
+                                    <MudButton Variant="Variant.Filled"
+                                               Style="background-color:black; color:white;"
+                                               OnClick="@(() => EditDroneAsync(drone))">
+                                        Editar
+                                    </MudButton>
+
+                                    <!-- Eliminar dron -->
+                                    <MudButton Variant="Variant.Filled"
+                                               Style="background-color:#ff0000; color:white;"
+                                               OnClick="@(() => DeleteDroneAsync(drone.DronID))">
+                                        Borrar
+                                    </MudButton>
+
+                                </Authorized>
+
+                            </AuthorizeView>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Imagen a la derecha -->
+                @if (!imageLeft)
+                {
+                    <MudImage Src="@(drone.Images.FirstOrDefault()?.UrlImageDron ?? "/images/no-image.png")"
+                              Alt="@drone.Name"
+                              Class="drone-image" />
+                }
+
+            </div>
+
+        </MudPaper>
+    }
+
+</MudContainer>
+
+@code {
+    [Inject] private ApplicationDbContext _context { get; set; } = default!;
+    [Inject] private IDialogService DialogService { get; set; } = default!;
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+
+    private List<Drone> _drones = new();
+    private ClaimsPrincipal? _user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _user = authState.User;
+
+        _drones = await _context.Drones
+            .Include(d => d.Images)
+            .ToListAsync();
+    }
+
+    private async Task EditDroneAsync(Drone drone)
+    {
+        var parameters = new DialogParameters
+        {
+            { "DroneToEdit", drone }
+        };
+
+        var options = new DialogOptions
+        {
+            CloseButton = true,
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<AddDrone>(
+            "Editar Dron",
+            parameters,
+            options
+        );
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            _drones = await _context.Drones
+                .Include(d => d.Images)
+                .ToListAsync();
+
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteDroneAsync(int droneId)
+    {
+        var drone = await _context.Drones
+            .Include(d => d.Images)
+            .FirstOrDefaultAsync(d => d.DronID == droneId);
+
+        if (drone == null)
+            return;
+
+        foreach (var img in drone.Images)
+        {
+            var filePath = Path.Combine(
+                Environment.CurrentDirectory,
+                "wwwroot",
+                "images",
+                "drones",
+                Path.GetFileName(img.UrlImageDron)
+            );
+
+            if (File.Exists(filePath))
+                File.Delete(filePath);
+        }
+
+        _context.Drones.Remove(drone);
+        await _context.SaveChangesAsync();
+
+        _drones = await _context.Drones
+            .Include(d => d.Images)
+            .ToListAsync();
+
+        StateHasChanged();
+    }
+}
+
+<style>
+
+    /* Tarjeta contenedora del dron */
+    .drone-card {
+        width: 80%;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        background-color: #ffffff;
+    }
+
+        /* Efecto hover */
+        .drone-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+    /* Layout horizontal de la tarjeta */
+    .drone-row-card {
+        display: flex;
+        flex-direction: row;
+        height: 300px;
+        align-items: stretch;
+    }
+
+    /* Imagen del dron */
+    .drone-image {
+        width: 50%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        flex-shrink: 0;
+        transition: transform 0.3s;
+    }
+
+        /* Zoom suave al pasar el mouse */
+        .drone-image:hover {
+            transform: scale(1.05);
+        }
+
+    /* Contenedor de información */
+    .drone-info {
+        display: flex;
+        width: 50%;
+        flex-direction: column;
+        justify-content: center;
+        padding: 30px 25px;
+        background: linear-gradient(to bottom, #fefefe, #f9f9f9);
+    }
+
+    .drone-info-content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    /* Estilo del título */
+    .drone-info h5 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #333333;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+        border-bottom: 2px solid #4DB6AC;
+        padding-bottom: 5px;
+    }
+
+    .drone-info p {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: #555555;
+        margin-bottom: 10px;
+    }
+
+    .drone-info .subtitle {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #4DB6AC;
+        margin-bottom: 20px;
+    }
+
+    /* Contenedor de botones */
+    .button-row {
+        display: flex;
+        gap: 10px;
+        margin-top: auto;
+        justify-content: center;
+    }
+
+    /* Alineación del contenido */
+    .drone-info-left {
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .drone-info-right {
+        align-items: flex-end;
+        text-align: right;
+    }
+
+    /* ===== TÍTULO PRINCIPAL RENTA ===== */
+    .renta-title {
+        font-size: 2.6rem;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #004D40;
+        position: relative;
+        padding-bottom: 12px;
+    }
+
+        /* Línea decorativa */
+        .renta-title::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            width: 477px;
+            height: 4px;
+            background: linear-gradient(90deg, #004D40, #4DB6AC);
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+    /* Responsive para móviles */
+    /* Las media siempre deben tener doble arroba (ALT 64) por un bug de Blazor */
+    @@media (max-width: 768px) {
+
+        .drone-row-card {
+            flex-direction: column;
+            height: auto;
+        }
+
+        .drone-image {
+            width: 100%;
+            height: 250px;
+        }
+
+        .drone-info {
+            width: 100%;
+            height: auto;
+        }
+
+        .drone-info-content {
+            justify-content: flex-start;
+            padding: 15px 0;
+        }
+
+        .drone-info h5 {
+            font-size: 1.5rem;
+        }
+
+        .drone-info p {
+            font-size: 1rem;
+        }
+
+        .drone-info .subtitle {
+            font-size: 0.95rem;
+        }
+    }
+
+</style>

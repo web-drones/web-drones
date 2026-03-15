@@ -1,4 +1,4 @@
-﻿@page "/renta"
+﻿@page "/venta"
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.EntityFrameworkCore
 @using MudBlazor
@@ -138,9 +138,10 @@
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         _user = authState.User;
 
+        // Filtra solo los drones que están en venta
         _drones = await _context.Drones
             .Include(d => d.Images)
-            .Where(d => d.PriceRent != null) // solo drones disponibles para renta
+            .Where(d => d.PriceSale != null) // solo drones en venta
             .ToListAsync();
     }
 
@@ -170,7 +171,7 @@
         {
             _drones = await _context.Drones
                 .Include(d => d.Images)
-                .Where(d => d.PriceRent != null) // solo drones disponibles para renta
+                .Where(d => d.PriceSale != null) // solo drones en venta
                 .ToListAsync();
 
             StateHasChanged();
@@ -205,7 +206,7 @@
 
         _drones = await _context.Drones
             .Include(d => d.Images)
-            .Where(d => d.PriceRent != null) // solo drones disponibles para renta
+            .Where(d => d.PriceSale != null) // solo drones en venta
             .ToListAsync();
 
         StateHasChanged();

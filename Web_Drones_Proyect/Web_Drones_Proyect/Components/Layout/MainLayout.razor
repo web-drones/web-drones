@@ -7,8 +7,14 @@
 
     <!-- Barra superior de navegación -->
     <MudAppBar Style="background-color:#004D40;" Elevation="4" Fixed="true">
-        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Style="color:#4DB6AC;" />
-        <MudText Typo="Typo.h6" Class="ml-2" Style="color:#4DB6AC;">Web Drones</MudText>
+        <MudIconButton Class="aero-icon" Href="/">
+            <i class="bi bi-house-door-fill" style="font-size:20px;"></i>
+        </MudIconButton>
+        <MudText Typo="Typo.h6"
+                 Class="ml-2"
+                 Style="color:#4DB6AC; font-family:'Microgramma'; letter-spacing:2px;">
+            AERO SANTO
+        </MudText>
         <MudSpacer />
 
         <!-- Menú desplegable de servicios disponibles -->
@@ -99,4 +105,14 @@
     .servicios-menu .mud-icon-button {
         color: #4DB6AC !important;
     }
+
+    .aero-icon {
+        color: #4DB6AC;
+        transition: transform .2s ease, color .2s ease;
+    }
+
+        .aero-icon:hover {
+            transform: scale(1.1);
+            color: #7fe0d4;
+        }
 </style>

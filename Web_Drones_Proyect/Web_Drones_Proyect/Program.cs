@@ -55,6 +55,10 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStat
 
 builder.Services.AddScoped<AuthService>();
 
+// Servicio de carrito de compras por usuario (Scoped):
+// Mantiene los productos del carrito durante la sesión del usuario autenticado
+builder.Services.AddScoped<CartService>();
+
 
 var app = builder.Build();
 

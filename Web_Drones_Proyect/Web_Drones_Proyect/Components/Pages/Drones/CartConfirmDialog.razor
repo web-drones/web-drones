@@ -1,0 +1,56 @@
+﻿@* @using MudBlazor
+@using Web_Drones_Proyect.Models
+@inject NavigationManager Nav
+
+<MudDialog>
+
+    <DialogContent>
+
+        <MudText Typo="Typo.h5">Confirmar pedido</MudText>
+
+        @foreach (var item in Items)
+        {
+            <MudText>
+                @item.Name x@item.Quantity = @item.SubTotal.ToString("C")
+            </MudText>
+        }
+
+        <MudDivider Class="my-2" />
+
+        <MudText Typo="Typo.h6">
+            Total: @Total.ToString("C")
+        </MudText>
+
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Success" OnClick="SendWhatsApp">
+            Enviar por WhatsApp
+        </MudButton>
+    </DialogActions>
+
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public List<CartItem> Items { get; set; } = new();
+    [Parameter] public decimal Total { get; set; }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private void SendWhatsApp()
+    {
+        var msg = "🧾 Pedido Web Drones%0A%0A";
+
+        foreach (var i in Items)
+            msg += $"{i.Name} x{i.Quantity} = {i.SubTotal}%0A";
+
+        msg += $"%0ATOTAL: {Total}";
+
+        var url = $"https://wa.me/18090000000?text={msg}";
+        Nav.NavigateTo("/carrito", true);
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+} *@

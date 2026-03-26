@@ -1,8 +1,10 @@
 ﻿@page "/"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using MudBlazor
 @using Web_Drones_Proyect.Models
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+
 
 <!-- ===================== -->
 <!-- Carrusel principal -->
@@ -85,6 +87,16 @@
                         <div class="button-row">
 
                             <!-- Navega a la página de detalles -->
+
+                            <AuthorizeView Roles="ADMIN,CLIENTE">
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Success"
+                                           StartIcon="@Icons.Material.Filled.AddShoppingCart"
+                                           OnClick="@(() => AddToCartAsync(drone))">
+                                    Añadir
+                                </MudButton>
+                            </AuthorizeView>
+
                             <MudButton Variant="Variant.Filled"
                                        Style="background-color:#4DB6AC; color:white;"
                                        OnClick="@(() => Nav.NavigateTo($"/drones/details/{drone.DronID}"))">

@@ -1,4 +1,7 @@
 ﻿@page "/drones/details/{Id:int}"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@using Microsoft.AspNetCore.Components.Authorization
 @using MudBlazor
 @using Web_Drones_Proyect.Models
 
@@ -119,11 +122,14 @@
                         </div>
 
                         <!-- Botón carrito -->
-                        <MudButton Variant="Variant.Filled"
-                                   Class="add-cart-btn mt-6"
-                                   StartIcon="@Icons.Material.Filled.ShoppingCart">
-                            Añadir al carrito
-                        </MudButton>
+                        <AuthorizeView Roles="ADMIN,CLIENTE">
+                            <MudButton Variant="Variant.Filled"
+                                       Class="add-cart-btn mt-6"
+                                       StartIcon="@Icons.Material.Filled.ShoppingCart"
+                                       OnClick="@(() => AddToCartAsync())">
+                                Añadir al carrito
+                            </MudButton>
+                        </AuthorizeView>
 
                     </div>
 

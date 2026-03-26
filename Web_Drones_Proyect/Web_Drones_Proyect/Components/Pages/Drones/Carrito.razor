@@ -1,0 +1,28 @@
+﻿@page "/carrito"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+
+@if (_items == null)
+{
+    <MudProgressCircular Indeterminate />
+}
+else if (!_items.Any())
+{
+    <MudAlert Severity="Severity.Info">El carrito está vacío</MudAlert>
+}
+else
+{
+    @foreach (var item in _items)
+    {
+        <MudPaper Class="pa-4 mb-3">
+            <MudText>@item.Drone.Name</MudText>
+            <MudText>Cantidad: @item.Quantity</MudText>
+            <MudText>Precio: @item.UnitPrice.ToString("C")</MudText>
+
+            <MudButton Color="Color.Error"
+                       OnClick="@(() => Remove(item.CartItemID))">
+                Quitar
+            </MudButton>
+        </MudPaper>
+    }
+}

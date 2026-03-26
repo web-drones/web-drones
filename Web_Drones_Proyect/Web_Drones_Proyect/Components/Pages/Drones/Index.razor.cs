@@ -1,14 +1,21 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using Web_Drones_Proyect.Data;
+using Web_Drones_Proyect.Enums;
 using Web_Drones_Proyect.Models;
+using Web_Drones_Proyect.Services;
 
 namespace Web_Drones_Proyect.Components.Pages.Drones
 {
     // Componente que muestra la lista de drones en la página principal
     public partial class Index
     {
+        [Inject] private CartService CartService { get; set; } = default!;
+        [Inject] private ISnackbar Snackbar { get; set; } = default!;
+        [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
+
         // Contexto de base de datos
         [Inject] private ApplicationDbContext _context { get; set; } = default!;
 
@@ -87,5 +94,29 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
                 StateHasChanged();
             }
         }
+
+        private async Task AddToCartAsync(Drone drone)
+        {
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            var userId = int.Parse(auth.User
+                .FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
+
+            var result = await CartService.AddItemAsync(
+                userId,
+                drone.DronID,
+                false,
+                1
+            );
+
+            if (result == AddToCartResult.Success)
+            {
+                Snackbar.Add("Producto añadido al carrito", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Producto no disponible", Severity.Warning);
+            }
+        }
+
     }
 }

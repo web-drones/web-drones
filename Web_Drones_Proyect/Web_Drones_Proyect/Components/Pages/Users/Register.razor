@@ -49,34 +49,44 @@
                 <!-- Correo electrónico -->
                 <MudTextField Label="Correo Electrónico"
                               TValue="string"
+                              InputType="InputType.Email"
                               Value="_user.Email"
                               ValueChanged="@((string v) => _user.Email = v)"
                               ValueExpression="@(() => _user.Email)"
                               Required="true"
+                              RequiredError="El correo es obligatorio"
+                              Immediate="true"
+                              Validation="ValidateEmail"
                               Variant="Variant.Outlined"
                               Class="auth-input" />
 
                 <!-- Contraseña -->
                 <MudTextField Label="Contraseña"
                               TValue="string"
-                              InputType="InputType.Password"
+                              InputType="@(_showPassword? InputType.Text: InputType.Password)"
                               Value="_password"
                               ValueChanged="@((string v) => _password = v)"
                               ValueExpression="@(() => _password)"
                               Required="true"
                               Variant="Variant.Outlined"
-                              Class="auth-input" />
+                              Class="auth-input"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@(_showPassword? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                              OnAdornmentClick="TogglePasswordVisibility" />
 
                 <!-- Confirmación de contraseña -->
                 <MudTextField Label="Confirmar Contraseña"
                               TValue="string"
-                              InputType="InputType.Password"
+                              InputType="@(_showConfirmPassword? InputType.Text: InputType.Password)"
                               Value="_confirmPassword"
                               ValueChanged="@((string v) => _confirmPassword = v)"
                               ValueExpression="@(() => _confirmPassword)"
                               Required="true"
                               Variant="Variant.Outlined"
-                              Class="auth-input" />
+                              Class="auth-input"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@(_showConfirmPassword? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                              OnAdornmentClick="ToggleConfirmPasswordVisibility" />
 
                 <!-- Botón de registro -->
                 <MudButton Class="auth-btn"
@@ -351,6 +361,9 @@
 </style>
 
 @code {
+    // Control de visibilidad de contraseñas
+    private bool _showPassword = false;
+    private bool _showConfirmPassword = false;
 
     // Referencia al formulario MudBlazor
     private MudForm _form = default!;
@@ -446,4 +459,26 @@
         return Convert.ToBase64String(hash);
     }
 
+    private void TogglePasswordVisibility()
+    {
+        _showPassword = !_showPassword;
+    }
+
+    private void ToggleConfirmPasswordVisibility()
+    {
+        _showConfirmPassword = !_showConfirmPassword;
+    }
+
+    private string? ValidateEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return "El correo es obligatorio";
+
+        var regex = new System.Text.RegularExpressions.Regex(
+            @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+
+        return regex.IsMatch(email)
+            ? null
+            : "Formato de correo inválido";
+    }
 }

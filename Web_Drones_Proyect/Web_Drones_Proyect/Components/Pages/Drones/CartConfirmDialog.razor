@@ -1,24 +1,35 @@
 ﻿@using MudBlazor
 @using Web_Drones_Proyect.Models
 @inject NavigationManager Nav
+
+<!-- Diálogo modal para confirmar el pedido -->
 <MudDialog>
 
     <DialogContent>
 
+        <!-- Título del modal -->
         <MudText Typo="Typo.h5" Class="mb-2">
             🧾 Confirmar pedido
         </MudText>
 
+        <!-- Separador visual -->
         <MudDivider Class="mb-3" />
 
+        <!-- Listado de artículos del carrito -->
         @foreach (var item in Items)
         {
+            <!-- Contenedor de cada producto -->
             <MudPaper Elevation="1" Class="pa-3 mb-3">
+
+                <!-- Nombre del dron -->
                 <MudText Typo="Typo.subtitle1" Class="fw-bold">
                     🛸 @item.Drone.Name
                 </MudText>
 
+                <!-- Información del producto en columnas -->
                 <MudGrid Class="mt-1">
+
+                    <!-- Cantidad -->
                     <MudItem xs="4">
                         <MudText Typo="Typo.body2">
                             Cantidad:
@@ -28,6 +39,7 @@
                         </MudText>
                     </MudItem>
 
+                    <!-- Precio unitario -->
                     <MudItem xs="4">
                         <MudText Typo="Typo.body2">
                             Precio:
@@ -37,6 +49,7 @@
                         </MudText>
                     </MudItem>
 
+                    <!-- Subtotal -->
                     <MudItem xs="4">
                         <MudText Typo="Typo.body2">
                             Subtotal:
@@ -45,44 +58,63 @@
                             @item.SubTotal.ToString("C")
                         </MudText>
                     </MudItem>
+
                 </MudGrid>
             </MudPaper>
         }
 
+        <!-- Separador antes del total -->
         <MudDivider Class="my-3" />
 
+        <!-- Total del pedido -->
         <MudText Typo="Typo.h6" Align="Align.Right">
             💰 Total: <b>@Total.ToString("C")</b>
         </MudText>
 
     </DialogContent>
 
+    <!-- Acciones del modal -->
     <DialogActions>
+
+        <!-- Botón para cancelar y cerrar el modal -->
         <MudButton Variant="Variant.Text" OnClick="Cancel">
             Cancelar
         </MudButton>
 
+        <!-- Botón para enviar el pedido por WhatsApp -->
         <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="SendWhatsApp">
             Enviar por WhatsApp
         </MudButton>
+
     </DialogActions>
 
 </MudDialog>
 
 @code {
+
+    // Instancia del diálogo para controlarlo (cerrar, cancelar, etc.)
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    // Lista de productos del carrito
     [Parameter] public List<CartItem> Items { get; set; } = new();
+
+    // Total del pedido
     [Parameter] public decimal Total { get; set; }
 
+    // Cierra el modal sin realizar acción
     private void Cancel() => MudDialog.Cancel();
 
+    // Construye y envía el mensaje de WhatsApp con el pedido
     private void SendWhatsApp()
     {
+        // Constructor de texto para el mensaje
         var sb = new System.Text.StringBuilder();
 
+        // Encabezado del pedido
         sb.AppendLine("🧾 *Pedido Web Drones*");
         sb.AppendLine("──────────────────");
 
+        // Detalle de cada producto
         foreach (var i in Items)
         {
             sb.AppendLine(
@@ -93,16 +125,22 @@
             );
         }
 
+        // Total del pedido
         sb.AppendLine("──────────────────");
         sb.AppendLine($"💰 *TOTAL A PAGAR:* {Total:C}");
         sb.AppendLine("\nQuedo atento para confirmar el pedido ✅");
 
+        // Codifica el mensaje para URL
         var message = Uri.EscapeDataString(sb.ToString());
 
-        var phone = "18496517787"; // WhatsApp RD
+        // Número de WhatsApp destino (República Dominicana)
+        var phone = "18496517787";
         var url = $"https://wa.me/{phone}?text={message}";
 
+        // Redirecciona al enlace de WhatsApp
         Nav.NavigateTo(url, true);
+
+        // Cierra el modal indicando éxito
         MudDialog.Close(DialogResult.Ok(true));
     }
 }

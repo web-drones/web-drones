@@ -4,26 +4,30 @@
 
 <div class="cart-wrap">
 
-    <!-- HEADER + RESUMEN STICKY -->
     <div class="cart-summary">
         <div>
             <h2>🛒 Mi carrito</h2>
             <div class="summary-meta">
+                @* Muestra la cantidad total de ítems distintos en el carrito *@
                 <span>Total productos: @TotalProductos</span>
+                @* Muestra cuántos productos ha marcado el usuario con el checkbox *@
                 <span>Seleccionados: @ProductosSeleccionados</span>
             </div>
         </div>
 
         <div class="summary-actions">
             <div class="summary-total">
+                @* Cálculo monetario total de los elementos seleccionados *@
                 Total: @TotalSeleccionado.ToString("C")
             </div>
 
+            @* Botón para procesar el pago únicamente de los artículos marcados *@
             <MudButton Class="btn-pay btn-pay--selected"
                        OnClick="PagarSeleccionados">
                 Pagar seleccionados
             </MudButton>
 
+            @* Botón para procesar el pago de todos los artículos presentes en el carrito *@
             <MudButton Class="btn-pay btn-pay--all"
                        OnClick="PagarTodo">
                 Pagar todo
@@ -31,10 +35,12 @@
         </div>
     </div>
 
+    @* LÓGICA DE CARGA: Si la lista de ítems es nula, muestra un indicador de carga *@
     @if (_items == null)
     {
         <MudProgressCircular Indeterminate />
     }
+    @* Si la lista está vacía, muestra un mensaje informativo *@
     else if (!_items.Any())
     {
         <MudAlert Severity="Severity.Info">
@@ -43,13 +49,15 @@
     }
     else
     {
-        <!-- GRID DE PRODUCTOS -->
         <div class="cart-grid">
+            @* Itera sobre cada objeto en la colección de ítems del carrito *@
             @foreach (var item in _items)
             {
                 <div class="cart-card">
+                    @* Checkbox para incluir/excluir el producto del cálculo total de pago *@
                     <MudCheckBox T="bool" @bind-Value="item.Selected" Class="select-box" />
 
+                    @* Imagen del dron: utiliza la primera disponible o una imagen por defecto *@
                     <img src="@(item.Drone.Images.FirstOrDefault()?.UrlImageDron ?? "/images/no-image.png")"
                          alt="@item.Drone.Name" />
 
@@ -57,6 +65,7 @@
 
                     <p class="desc">@item.Drone.Description</p>
 
+                    @* Especificaciones técnicas del dron y tipo de precio aplicado *@
                     <div class="specs">
                         <span>📷 @item.Drone.Camera</span>
                         <span>💼 @item.PriceType</span>
@@ -66,6 +75,7 @@
                         @item.UnitPrice.ToString("C")
                     </div>
 
+                    @* Control para modificar la cantidad y visualización del subtotal por producto *@
                     <div class="qty-row">
                         <MudNumericField @bind-Value="item.Quantity"
                                          Min="1"
@@ -74,6 +84,7 @@
                         <span>@item.SubTotal.ToString("C")</span>
                     </div>
 
+                    @* Botón para eliminar el artículo específico del carrito mediante su ID *@
                     <MudButton Class="btn-remove"
                                OnClick="@(() => Remove(item.CartItemID))">
                         Quitar

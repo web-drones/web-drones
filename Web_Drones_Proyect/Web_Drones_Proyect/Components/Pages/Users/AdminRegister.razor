@@ -1,18 +1,22 @@
-﻿@page "/login"
-@using Microsoft.AspNetCore.Components.Authorization
-@using Web_Drones_Proyect.Services
+﻿@page "/AdminRegister"
+@using System.Security.Cryptography
+@using System.Text
+@using Microsoft.AspNetCore.Authorization
+@using Web_Drones_Proyect.Models
+@using Web_Drones_Proyect.Data.Repositories
 @using MudBlazor
+@using Web_Drones_Proyect.Services
 
 <!-- ===================== -->
-<!-- Contenedor principal de autenticación -->
+<!-- Contenedor principal de registro -->
 <!-- ===================== -->
 <div class="auth-bg">
     <div class="auth-shell">
 
-        <!-- Tarjeta del formulario de login -->
+        <!-- Tarjeta del formulario -->
         <div class="auth-card">
 
-            <!-- Marca / Identidad del sistema -->
+            <!-- Identidad / marca del sistema -->
             <div class="brand-row">
                 <div class="brand-badge">Aero Santo Domingo</div>
                 <div class="brand-dot" aria-hidden="true"></div>
@@ -20,36 +24,48 @@
 
             <!-- Título -->
             <MudText Typo="Typo.h4" Class="auth-title">
-                Iniciar Sesion
+                Crear Cuenta Admin
             </MudText>
 
             <!-- Subtítulo -->
             <MudText Typo="Typo.body2" Class="auth-subtitle">
-                Inicia sesión para continuar.
+                Completa tus datos para registrarte.
             </MudText>
 
             <!-- ===================== -->
-            <!-- Formulario de login -->
+            <!-- Formulario de registro -->
             <!-- ===================== -->
-            <MudForm @ref="_form"
-                     Class="auth-form"
-                     OnValidSubmit="LoginAsync">
+            <MudForm @ref="_form" Class="auth-form">
 
-                <!-- Campo correo -->
-                <MudTextField Label="Correo Electrónico"
+                <!-- Nombre de usuario -->
+                <MudTextField Label="Nombre"
                               TValue="string"
-                              Value="@_email"
-                              ValueChanged="@((string v) => _email = v)"
-                              ValueExpression="@(() => _email)"
+                              Value="_user.UserName"
+                              ValueChanged="@((string v) => _user.UserName = v)"
+                              ValueExpression="@(() => _user.UserName)"
                               Required="true"
                               Variant="Variant.Outlined"
                               Class="auth-input" />
 
-                <!-- Campo contraseña con mostrar / ocultar -->
+                <!-- Correo electrónico -->
+                <MudTextField Label="Correo Electrónico"
+                              TValue="string"
+                              InputType="InputType.Email"
+                              Value="_user.Email"
+                              ValueChanged="@((string v) => _user.Email = v)"
+                              ValueExpression="@(() => _user.Email)"
+                              Required="true"
+                              RequiredError="El correo es obligatorio"
+                              Immediate="true"
+                              Validation="ValidateEmail"
+                              Variant="Variant.Outlined"
+                              Class="auth-input" />
+
+                <!-- Contraseña -->
                 <MudTextField Label="Contraseña"
                               TValue="string"
                               InputType="@(_showPassword? InputType.Text: InputType.Password)"
-                              Value="@_password"
+                              Value="_password"
                               ValueChanged="@((string v) => _password = v)"
                               ValueExpression="@(() => _password)"
                               Required="true"
@@ -59,16 +75,30 @@
                               AdornmentIcon="@(_showPassword? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
                               OnAdornmentClick="TogglePasswordVisibility" />
 
-                <!-- Botón de inicio de sesión -->
+                <!-- Confirmación de contraseña -->
+                <MudTextField Label="Confirmar Contraseña"
+                              TValue="string"
+                              InputType="@(_showConfirmPassword? InputType.Text: InputType.Password)"
+                              Value="_confirmPassword"
+                              ValueChanged="@((string v) => _confirmPassword = v)"
+                              ValueExpression="@(() => _confirmPassword)"
+                              Required="true"
+                              Variant="Variant.Outlined"
+                              Class="auth-input"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@(_showConfirmPassword? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                              OnAdornmentClick="ToggleConfirmPasswordVisibility" />
+
+                <!-- Botón de registro -->
                 <MudButton Class="auth-btn"
-                           OnClick="LoginAsync"
+                           OnClick="RegisterAsync"
                            FullWidth="true">
-                    Entrar
+                    Registrarse
                 </MudButton>
 
             </MudForm>
 
-            <!-- Mensaje de error si el login falla -->
+            <!-- Mensaje de error -->
             @if (!string.IsNullOrEmpty(_errorMessage))
             {
                 <MudAlert Severity="Severity.Error" Dense="true" Class="auth-alert">
@@ -76,22 +106,19 @@
                 </MudAlert>
             }
 
-            <!-- Enlace para registro -->
+            <!-- Enlace para iniciar sesión -->
             <div class="auth-foot">
-                <span>¿No tienes cuenta?</span>
-                <a class="auth-link" href="/register">Crear cuenta</a>
+                <span>¿Ya tienes cuenta?</span>
+                <a class="auth-link" href="/login">Iniciar sesión</a>
             </div>
 
         </div>
-
     </div>
 </div>
 
-<style>
 
-    /* ===================== */
-    /* Variables de color del tema */
-    /* ===================== */
+
+<style>
     :root {
         --teal-0: #E0F2F1;
         --teal-1: #B2DFDB;
@@ -108,7 +135,6 @@
         --shadow: rgba(0,77,64,.18);
     }
 
-    /* Fondo principal con gradientes */
     .auth-bg {
         min-height: calc(100vh - 64px);
         padding: 3.2rem 1rem;
@@ -119,7 +145,6 @@
         overflow: hidden;
     }
 
-        /* Elementos decorativos animados */
         .auth-bg::before,
         .auth-bg::after {
             content: "";
@@ -146,15 +171,13 @@
             animation-delay: 1.6s;
         }
 
-    /* Contenedor del login */
     .auth-shell {
         width: 100%;
-        max-width: 460px;
+        max-width: 480px;
         position: relative;
         z-index: 1;
     }
 
-    /* Tarjeta principal */
     .auth-card {
         border-radius: 22px;
         padding: 2rem 2rem 1.3rem;
@@ -169,7 +192,6 @@
         overflow: hidden;
     }
 
-        /* Decoración superior */
         .auth-card::before {
             content: "";
             position: absolute;
@@ -179,7 +201,6 @@
             pointer-events: none;
         }
 
-    /* Encabezado de marca */
     .brand-row {
         display: flex;
         align-items: center;
@@ -187,7 +208,6 @@
         margin-bottom: .9rem;
     }
 
-    /* Badge de marca */
     .brand-badge {
         width: fit-content;
         padding: .38rem .75rem;
@@ -201,7 +221,6 @@
         opacity: 0;
     }
 
-    /* Indicador animado */
     .brand-dot {
         width: 10px;
         height: 10px;
@@ -211,7 +230,6 @@
         animation: pulse 2.2s ease-in-out infinite;
     }
 
-    /* Título */
     .auth-title {
         color: var(--ink);
         font-weight: 950;
@@ -221,7 +239,6 @@
         opacity: 0;
     }
 
-    /* Subtítulo */
     .auth-subtitle {
         color: var(--muted);
         margin-top: .35rem;
@@ -229,7 +246,6 @@
         opacity: 0;
     }
 
-    /* Formulario */
     .auth-form {
         margin-top: 1.25rem;
         display: grid;
@@ -238,7 +254,6 @@
         opacity: 0;
     }
 
-    /* Estilos de inputs */
     .auth-input .mud-input-control {
         border-radius: 14px;
         background: rgba(255,255,255,.75);
@@ -252,7 +267,16 @@
         border-color: rgba(0,150,136,.35) !important;
     }
 
-    /* Botón login */
+    .auth-input .mud-input-label {
+        color: rgba(8,59,51,.62) !important;
+        font-weight: 650;
+    }
+
+    .auth-input input {
+        color: var(--ink) !important;
+        font-weight: 650;
+    }
+
     .auth-btn {
         margin-top: .35rem;
         border-radius: 14px;
@@ -271,12 +295,16 @@
             filter: saturate(1.05);
         }
 
+        .auth-btn:active {
+            transform: translateY(0px);
+            box-shadow: 0 10px 18px rgba(0,77,64,.20);
+        }
+
     .auth-alert {
         margin-top: 1rem;
         border-radius: 14px;
     }
 
-    /* Footer */
     .auth-foot {
         margin-top: 1.15rem;
         display: flex;
@@ -292,11 +320,10 @@
         text-decoration: none;
     }
 
-    .auth-link:hover {
-        text-decoration: underline;
-    }
+        .auth-link:hover {
+            text-decoration: underline;
+        }
 
-    /* Animación de entrada del card */
     @@keyframes fadeUp {
         from {
             opacity: 0;
@@ -309,7 +336,6 @@
         }
     }
 
-    /* Animación de blobs del fondo */
     @@keyframes floatBlob {
         0% {
             transform: translateY(0px);
@@ -324,7 +350,6 @@
         }
     }
 
-    /* Animación del punto verde */
     @@keyframes pulse {
         0%, 100% {
             transform: scale(1);
@@ -336,73 +361,127 @@
             box-shadow: 0 0 0 10px rgba(29,233,182,.14);
         }
     }
-
 </style>
 
 @code {
+    // Control de visibilidad de contraseñas
+    private bool _showPassword = false;
+    private bool _showConfirmPassword = false;
 
     // Referencia al formulario MudBlazor
     private MudForm _form = default!;
 
-    // Controla si la contraseña es visible
-    private bool _showPassword = false;
+    // Modelo temporal del usuario
+    private UserEntity _user = new();
 
-    // Campos del formulario
-    private string _email = string.Empty;
+    // Campos de contraseña
     private string _password = string.Empty;
+    private string _confirmPassword = string.Empty;
 
     // Mensaje de error mostrado al usuario
     private string? _errorMessage;
 
-    // Servicio de autenticación
-    [Inject] private AuthService AuthService { get; set; } = default!;
+    // Repositorio para acceso a usuarios en la base de datos
+    [Inject] private IRepository<User> UserRepository { get; set; } = default!;
 
-    // Servicio de navegación
+    // Servicio de navegación entre páginas
     [Inject] private NavigationManager Navigation { get; set; } = default!;
-
-    // Estado de autenticación actual
-    [CascadingParameter] private Task<AuthenticationState> AuthStateTask { get; set; } = default!;
 
     // Notificaciones tipo snackbar
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
+    // Servicio de autenticación
+    [Inject] private AuthService AuthService { get; set; } = default!;
 
-    // Método que ejecuta el proceso de login
-    private async Task LoginAsync()
+
+    // Método principal para registrar un usuario
+    private async Task RegisterAsync()
     {
         // Valida el formulario
-        if (_form != null) await _form.Validate();
+        if (_form != null)
+            await _form.Validate();
 
         _errorMessage = string.Empty;
 
-        // Si el formulario no es válido, detiene el proceso
-        if (!_form.IsValid) return;
+        if (!_form.IsValid)
+            return;
 
-        // Intenta autenticar al usuario
-        var success = await AuthService.LoginAsync(_email, _password);
-
-        if (success)
+        // Verifica que las contraseñas coincidan
+        if (_password != _confirmPassword)
         {
-            // Notificación de éxito
-            Snackbar.Add("Inicio de sesión exitoso ✔", Severity.Success, config =>
-            {
-                config.VisibleStateDuration = 5000;
-                config.ShowCloseIcon = true;
-            });
+            _errorMessage = "Las contraseñas no coinciden.";
+            return;
+        }
 
-            // Redirige a la página principal
+        // Verifica si el correo ya existe
+        var existingUser = (await UserRepository.FindAsync(u => u.Email == _user.Email))
+            .FirstOrDefault();
+
+        if (existingUser != null)
+        {
+            _errorMessage = "Este correo ya está registrado.";
+            return;
+        }
+
+        // Crea el usuario que se guardará en la base de datos
+        var userToSave = new User
+        {
+            UserName = _user.UserName,
+            Email = _user.Email,
+            PasswordHash = HashPassword(_password),
+            RolID = 4, // rol por defecto para nuevos usuarios
+            Active = true,
+            RegistrationDate = DateTime.Now
+        };
+
+        // Guarda el usuario
+        await UserRepository.AddAsync(userToSave);
+        await UserRepository.SaveChangesAsync();
+
+        // Intenta iniciar sesión automáticamente
+        var loginSuccess = await AuthService.LoginAsync(_user.Email, _password);
+
+        if (loginSuccess)
+        {
+            Snackbar.Add($"Bienvenido {_user.UserName}, tu cuenta fue creada correctamente.", Severity.Success);
             Navigation.NavigateTo("/");
         }
         else
         {
-            // Mensaje si las credenciales son incorrectas
-            _errorMessage = "Correo o contraseña incorrectos.";
+            Navigation.NavigateTo("/login");
         }
     }
 
-    // Alterna mostrar / ocultar contraseña
+
+    // Genera el hash de la contraseña usando SHA256
+    private string HashPassword(string password)
+    {
+        using var sha256 = SHA256.Create();
+        var bytes = Encoding.UTF8.GetBytes(password);
+        var hash = sha256.ComputeHash(bytes);
+        return Convert.ToBase64String(hash);
+    }
+
     private void TogglePasswordVisibility()
     {
         _showPassword = !_showPassword;
+    }
+
+    private void ToggleConfirmPasswordVisibility()
+    {
+        _showConfirmPassword = !_showConfirmPassword;
+    }
+
+    private string? ValidateEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return "El correo es obligatorio";
+
+        var regex = new System.Text.RegularExpressions.Regex(
+            @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+
+        return regex.IsMatch(email)
+            ? null
+            : "Formato de correo inválido";
     }
 }

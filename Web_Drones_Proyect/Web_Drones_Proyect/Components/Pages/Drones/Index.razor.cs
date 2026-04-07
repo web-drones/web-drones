@@ -95,6 +95,7 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
             }
         }
 
+        // Agrega un dron al carrito del usuario autenticado y muestra un mensaje según el resultado
         private async Task AddToCartAsync(Drone drone)
         {
             var auth = await AuthStateProvider.GetAuthenticationStateAsync();

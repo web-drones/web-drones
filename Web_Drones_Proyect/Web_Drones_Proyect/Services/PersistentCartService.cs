@@ -100,7 +100,17 @@ namespace Web_Drones_Proyect.Services
         //  Obtener items del carrito
         public async Task<List<CartItem>> GetItemsAsync(int userId)
         {
-            var cart = await GetOrCreateActiveCartAsync(userId);
+            var cart = await _context.Carts
+                .Include(c => c.Items)
+                    .ThenInclude(i => i.Drone)
+                        .ThenInclude(d => d.Images)
+                .FirstOrDefaultAsync(c =>
+                    c.UserID == userId &&
+                    c.Status == CartStatus.Active
+                );
+
+            if (cart == null)
+                return new List<CartItem>();
 
             return cart.Items
                 .Where(i => i.Status == CartItemStatus.InCart)

@@ -1,31 +1,68 @@
-﻿@* @using MudBlazor
+﻿@using MudBlazor
 @using Web_Drones_Proyect.Models
 @inject NavigationManager Nav
-
 <MudDialog>
 
     <DialogContent>
 
-        <MudText Typo="Typo.h5">Confirmar pedido</MudText>
+        <MudText Typo="Typo.h5" Class="mb-2">
+            🧾 Confirmar pedido
+        </MudText>
+
+        <MudDivider Class="mb-3" />
 
         @foreach (var item in Items)
         {
-            <MudText>
-                @item.Name x@item.Quantity = @item.SubTotal.ToString("C")
-            </MudText>
+            <MudPaper Elevation="1" Class="pa-3 mb-3">
+                <MudText Typo="Typo.subtitle1" Class="fw-bold">
+                    🛸 @item.Drone.Name
+                </MudText>
+
+                <MudGrid Class="mt-1">
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.body2">
+                            Cantidad:
+                        </MudText>
+                        <MudText Typo="Typo.body1">
+                            @item.Quantity
+                        </MudText>
+                    </MudItem>
+
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.body2">
+                            Precio:
+                        </MudText>
+                        <MudText Typo="Typo.body1">
+                            @item.UnitPrice.ToString("C")
+                        </MudText>
+                    </MudItem>
+
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.body2">
+                            Subtotal:
+                        </MudText>
+                        <MudText Typo="Typo.body1" Color="Color.Primary">
+                            @item.SubTotal.ToString("C")
+                        </MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
         }
 
-        <MudDivider Class="my-2" />
+        <MudDivider Class="my-3" />
 
-        <MudText Typo="Typo.h6">
-            Total: @Total.ToString("C")
+        <MudText Typo="Typo.h6" Align="Align.Right">
+            💰 Total: <b>@Total.ToString("C")</b>
         </MudText>
 
     </DialogContent>
 
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancelar</MudButton>
-        <MudButton Color="Color.Success" OnClick="SendWhatsApp">
+        <MudButton Variant="Variant.Text" OnClick="Cancel">
+            Cancelar
+        </MudButton>
+
+        <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="SendWhatsApp">
             Enviar por WhatsApp
         </MudButton>
     </DialogActions>
@@ -41,16 +78,31 @@
 
     private void SendWhatsApp()
     {
-        var msg = "🧾 Pedido Web Drones%0A%0A";
+        var sb = new System.Text.StringBuilder();
+
+        sb.AppendLine("🧾 *Pedido Web Drones*");
+        sb.AppendLine("──────────────────");
 
         foreach (var i in Items)
-            msg += $"{i.Name} x{i.Quantity} = {i.SubTotal}%0A";
+        {
+            sb.AppendLine(
+                $"🛸 {i.Drone.Name}\n" +
+                $"   • Cantidad: {i.Quantity}\n" +
+                $"   • Precio: {i.UnitPrice:C}\n" +
+                $"   • Subtotal: {i.SubTotal:C}\n"
+            );
+        }
 
-        msg += $"%0ATOTAL: {Total}";
+        sb.AppendLine("──────────────────");
+        sb.AppendLine($"💰 *TOTAL A PAGAR:* {Total:C}");
+        sb.AppendLine("\nQuedo atento para confirmar el pedido ✅");
 
-        var url = $"https://wa.me/18090000000?text={msg}";
-        Nav.NavigateTo("/carrito", true);
+        var message = Uri.EscapeDataString(sb.ToString());
 
+        var phone = "18496517787"; // WhatsApp RD
+        var url = $"https://wa.me/{phone}?text={message}";
+
+        Nav.NavigateTo(url, true);
         MudDialog.Close(DialogResult.Ok(true));
     }
-} *@
+}

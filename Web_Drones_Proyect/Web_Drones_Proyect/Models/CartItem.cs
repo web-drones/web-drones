@@ -39,5 +39,16 @@ namespace Web_Drones_Proyect.Models
 
         [ForeignKey(nameof(DronID))]
         public Drone Drone { get; set; } = null!;
+
+        // ===== PROPIEDADES SOLO UI =====
+
+        [NotMapped]
+        public bool Selected { get; set; } = false;
+
+        [NotMapped]
+        public decimal SubTotal => UnitPrice * Quantity;
+
+        [NotMapped]
+        public string PriceType => IsRent ? "Renta" : "Venta";
     }
 }

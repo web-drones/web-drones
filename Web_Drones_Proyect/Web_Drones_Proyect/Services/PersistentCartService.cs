@@ -57,7 +57,19 @@ namespace Web_Drones_Proyect.Services
             if (drone.Stock <= 0)
                 return AddToCartResult.OutOfStock;
 
-            //  Validar operación
+            // 🔁 Si no es venta pero solo existe renta → forzar renta
+            if (!isRent && !drone.PriceSale.HasValue && drone.PriceRent.HasValue)
+            {
+                return await AddRentItemAsync(
+                    userId,
+                    dronId,
+                    DateTime.Today,
+                    DateTime.Today.AddDays(1),
+                    quantity
+                );
+            }
+
+            // Validaciones normales
             if (isRent && !drone.PriceRent.HasValue)
                 return AddToCartResult.NotAvailable;
 
@@ -90,6 +102,54 @@ namespace Web_Drones_Proyect.Services
                     AddedAt = DateTime.Now
                 });
             }
+
+            cart.UpdatedAt = DateTime.Now;
+            await _context.SaveChangesAsync();
+
+            return AddToCartResult.Success;
+        }
+
+        public async Task<AddToCartResult> AddRentItemAsync(
+            int userId,
+            int dronId,
+            DateTime startDate,
+            DateTime endDate,
+            int quantity = 1)
+        {
+            if (endDate.Date < startDate.Date)
+                throw new Exception("La fecha de fin no puede ser menor que la de inicio");
+
+            var cart = await GetOrCreateActiveCartAsync(userId);
+
+            var drone = await _context.Drones.FindAsync(dronId);
+            if (drone == null)
+                throw new Exception("Drone no encontrado");
+
+            if (!drone.PriceRent.HasValue)
+                return AddToCartResult.NotAvailable;
+
+            if (drone.Stock < quantity)
+                return AddToCartResult.OutOfStock;
+
+            var rentDays = (endDate.Date - startDate.Date).Days + 1;
+            if (rentDays <= 0)
+                throw new Exception("Días de renta inválidos");
+
+            var rentPricePerDay = drone.PriceRent.Value;
+
+            // ⚠️ RENTAS NUNCA SE AGRUPAN
+            cart.Items.Add(new CartItem
+            {
+                DronID = dronId,
+                Quantity = quantity,
+                IsRent = true,
+                RentStartDate = startDate.Date,
+                RentEndDate = endDate.Date,
+                RentPricePerDay = rentPricePerDay,
+                UnitPrice = rentPricePerDay, // solo para compatibilidad
+                Status = CartItemStatus.InCart,
+                AddedAt = DateTime.Now
+            });
 
             cart.UpdatedAt = DateTime.Now;
             await _context.SaveChangesAsync();

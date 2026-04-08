@@ -21,8 +21,15 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
         // Maneja diálogos de confirmación
         [Inject] private IDialogService DialogService { get; set; } = default!;
 
+
         // Lista de productos del carrito
         private List<CartItem> _items = new();
+
+        private UserEntity _cliente = new();
+        private CartItem? _rentItem;
+        private DateTime? _rentStart;
+        private DateTime? _rentEnd;
+        private int _rentQuantity = 1;
 
         // Se ejecuta al iniciar el componente
         protected override async Task OnInitializedAsync()
@@ -42,6 +49,21 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
 
             // Carga los productos del carrito
             _items = await CartService.GetItemsAsync(userId);
+        }
+
+        private async Task LoadClienteAsync()
+        {
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = auth.User;
+
+            if (!user.Identity!.IsAuthenticated)
+                return;
+
+            _cliente = new UserEntity
+            {
+                UserName = user.Identity.Name ?? "",
+                Email = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? ""
+            };
         }
 
         // Elimina un producto del carrito
@@ -75,41 +97,60 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
         // ===== PAGOS =====
 
         // Paga solo los productos seleccionados
-        private void PagarSeleccionados()
+        private async void PagarSeleccionados()
         {
             var itemsSeleccionados = _items
                 .Where(i => i.Selected)
                 .ToList();
 
-            // ❗ VALIDACIÓN CLAVE
             if (!itemsSeleccionados.Any())
             {
-                Snackbar.Add(
-                    "⚠️ Primero debe seleccionar algún artículo",
-                    Severity.Warning
-                );
+                Snackbar.Add("⚠️ Primero debe seleccionar algún artículo", Severity.Warning);
                 return;
             }
+
+            await LoadClienteAsync();
 
             DialogService.Show<CartConfirmDialog>(
                 "Confirmar pedido",
                 new DialogParameters
                 {
                     ["Items"] = itemsSeleccionados,
-                    ["Total"] = itemsSeleccionados.Sum(i => i.SubTotal)
+                    ["Total"] = itemsSeleccionados.Sum(i => i.SubTotal),
+                    ["Cliente"] = _cliente
                 });
         }
 
         // Paga todos los productos del carrito
-        private void PagarTodo()
+        private async void PagarTodo()
         {
-            // Abre el diálogo de confirmación
+            await LoadClienteAsync();
+
             DialogService.Show<CartConfirmDialog>(
                 "Confirmar pedido",
                 new DialogParameters
                 {
                     ["Items"] = _items,
-                    ["Total"] = _items.Sum(i => i.SubTotal)
+                    ["Total"] = _items.Sum(i => i.SubTotal),
+                    ["Cliente"] = _cliente
+                });
+        }
+
+        private void OpenRentModal(CartItem item)
+        {
+            _rentItem = item;
+            _rentStart = DateTime.Today;
+            _rentEnd = DateTime.Today.AddDays(1);
+            _rentQuantity = 1;
+
+            DialogService.Show<RentDialog>(
+                "Rentar dron",
+                new DialogParameters
+                {
+                    ["Item"] = item,
+                    ["StartDate"] = _rentStart,
+                    ["EndDate"] = _rentEnd,
+                    ["Quantity"] = _rentQuantity
                 });
         }
 

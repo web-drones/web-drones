@@ -68,7 +68,7 @@
                     @* Especificaciones técnicas del dron y tipo de precio aplicado *@
                     <div class="specs">
                         <span>📷 @item.Drone.Camera</span>
-                        <span>💼 @item.PriceType</span>
+                        <span>💼 @item.AvailabilityType</span>
                     </div>
 
                     <div class="price">
@@ -89,6 +89,25 @@
                                OnClick="@(() => Remove(item.CartItemID))">
                         Quitar
                     </MudButton>
+
+                    @if (!item.IsRent && item.CanBeRented)
+                    {
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Outlined"
+                                   OnClick="@(() => OpenRentModal(item))">
+                            Rentar
+                        </MudButton>
+                    }
+                    else if (item.IsRent)
+                    {
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Outlined"
+                                   OnClick="@(() => OpenRentModal(item))">
+                            Rentar
+                        </MudButton>
+                    }
+
+
                 </div>
             }
         </div>

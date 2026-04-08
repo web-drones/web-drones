@@ -2,117 +2,453 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using MudBlazor
 
-<!-- Layout principal de la aplicación -->
-<MudLayout Style="min-height:100vh; display:flex; flex-direction:column;">
+<MudLayout Class="aero-layout">
 
-    <!-- Barra superior de navegación -->
-    <MudAppBar Style="background-color:#004D40;" Elevation="4" Fixed="true">
-        <MudIconButton Class="aero-icon" Href="/">
-            <i class="bi bi-house-door-fill" style="font-size:20px;"></i>
-        </MudIconButton>
-        <MudText Typo="Typo.h6"
-                 Class="ml-2"
-                 Style="color:#4DB6AC; font-family:'Microgramma'; letter-spacing:2px;">
-            AERO SANTO
-        </MudText>
-        <MudSpacer />
+    <!-- Top navigation -->
+    <MudAppBar Elevation="0" Fixed="true" Class="aero-appbar">
+        <div class="aero-appbar__inner">
 
-        <!-- Menú desplegable de servicios disponibles -->
-        <MudMenu Label="Servicios" Variant="Variant.Text" Class="mx-2 servicios-menu"
-                 PopoverClass="servicios-menu-popover"
-                 Style="color:#4DB6AC; font-weight:500; font-size:0.9rem;">
-            <MudMenuItem Style="display:block; width:100%; height:100%; background-color:#004D40; color:#4DB6AC; border:none;"
-                         Href="/venta">Venta</MudMenuItem>
-            <MudMenuItem Style="display:block; width:100%; height:100%; background-color:#004D40; color:#4DB6AC; border:none;"
-                         Href="/renta">Renta</MudMenuItem>
-        </MudMenu>
+            <div class="aero-brand">
+                <MudIconButton Class="aero-home" Href="/">
+                    <i class="bi bi-house-door-fill" style="font-size:20px;"></i>
+                </MudIconButton>
 
-        <!-- Botón visible solo para usuarios con rol ADMIN -->
-        <AuthorizeView Roles="ADMIN">
-            <MudButton OnClick="OpenAddDialog" Variant="Variant.Text" Size="Size.Small" Style="color:#4DB6AC;"
-                       Class="mx-2">
-                Agregar un Dron
-            </MudButton>
-        </AuthorizeView>
+                <div class="aero-brand__logo">
+                    <img src="Logo.png" alt="Aero Santo Domingo" class="logo-img"/>
+                </div>
 
-        <!-- Opciones según estado de autenticación -->
-        <AuthorizeView>
-            <Authorized>
-                <!-- Cierra la sesión del usuario autenticado -->
-                <MudButton Variant="Variant.Text" Size="Size.Small" Style="color:#4DB6AC;" OnClick="LogoutAsync">
-                    Cerrar sesión
-                </MudButton>
-            </Authorized>
-            <NotAuthorized>
-                <!-- Navegación a páginas de autenticación -->
-                <MudButton Variant="Variant.Text" Size="Size.Small" Style="color:#4DB6AC;" Href="/login">
-                    Login
-                </MudButton>
+            </div>
 
-                <MudButton Variant="Variant.Outlined" Size="Size.Small" Style="color:#4DB6AC; border-color:#4DB6AC;" Href="/register" Class="mx-2">
-                    Registrarse
-                </MudButton>
-            </NotAuthorized>
-        </AuthorizeView>
+            <MudSpacer />
 
-        <!-- Icono del carrito visible para usuarios que no sean Visitante -->
-        <AuthorizeView>
-            <Authorized Context="auth">
-                @if (!auth.User.IsInRole("Visitante"))
-                {
-                    <MudIconButton Icon="@Icons.Material.Filled.ShoppingCart" Style="color:#4DB6AC;" Class="mx-2" Href="/carrito" />
-                }
-            </Authorized>
-        </AuthorizeView>
+            <div class="aero-nav">
 
+                <MudMenu Label="Servicios"
+                         Variant="Variant.Text"
+                         Class="aero-menu"
+                         PopoverClass="aero-menu-popover">
+                    <MudMenuItem Href="/venta" Class="aero-menu-item">Venta</MudMenuItem>
+                    <MudMenuItem Href="/renta" Class="aero-menu-item">Renta</MudMenuItem>
+                </MudMenu>
+
+                <AuthorizeView Roles="ADMIN">
+                    <MudButton OnClick="OpenAddDialog"
+                               Variant="Variant.Text"
+                               Size="Size.Small"
+                               Class="aero-nav-btn">
+                        Agregar un Dron
+                    </MudButton>
+                </AuthorizeView>
+
+                <AuthorizeView>
+                    <Authorized>
+                        <MudButton Variant="Variant.Text"
+                                   Size="Size.Small"
+                                   Class="aero-nav-btn"
+                                   OnClick="LogoutAsync">
+                            Cerrar sesión
+                        </MudButton>
+                    </Authorized>
+
+                    <NotAuthorized>
+                        <MudButton Variant="Variant.Text"
+                                   Size="Size.Small"
+                                   Class="aero-nav-btn"
+                                   Href="/login">
+                            Login
+                        </MudButton>
+
+                        <MudButton Variant="Variant.Filled"
+                                   Size="Size.Small"
+                                   Class="aero-register-btn"
+                                   Href="/register">
+                            Registrarse
+                        </MudButton>
+                    </NotAuthorized>
+                </AuthorizeView>
+
+                <AuthorizeView>
+                    <Authorized Context="auth">
+                        @if (!auth.User.IsInRole("Visitante"))
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.ShoppingCart"
+                                           Class="aero-cart"
+                                           Href="/carrito" />
+                        }
+                    </Authorized>
+                </AuthorizeView>
+
+            </div>
+        </div>
     </MudAppBar>
 
-    <!-- Contenedor donde se renderizan las páginas -->
-    <MudMainContent Class="main-content-reset">
-        @Body
+    <!-- Main -->
+    <MudMainContent Class="aero-main">
+        <div class="aero-main__bg"></div>
+        <div class="aero-main__content">
+            @Body
+        </div>
     </MudMainContent>
 
-    <!-- Pie de página del sitio -->
-    <MudPaper Elevation="2" Class="pa-4" Style="background-color:#004D40;">
-        <MudContainer MaxWidth="MaxWidth.Large" Style="display:flex; justify-content:space-between; align-items:center;">
-            <MudText Style="color:#4DB6AC;">© @DateTime.Now.Year Web Drones</MudText>
-            <MudText Style="color:#4DB6AC;">Drones</MudText>
-            <MudButton Variant="Variant.Text" Size="Size.Small" Style="color:#4DB6AC;" Class="mx-2" Href="/About">
-                Quienes somos
-            </MudButton>
+    <!-- Footer -->
+    <MudPaper Elevation="0" Class="aero-footer">
+        <MudContainer MaxWidth="MaxWidth.Large" Class="aero-footer__inner">
+            <div class="aero-footer__left">
+                <MudText Class="aero-footer__title">© @DateTime.Now.Year Aero Santo Domingo</MudText>
+                <MudText Class="aero-footer__subtitle">Tecnología, drones y soluciones modernas.</MudText>
+            </div>
+
+            <div class="aero-footer__links">
+                <MudButton Variant="Variant.Text" Size="Size.Small" Class="aero-footer-btn" Href="/About">
+                    Quiénes somos
+                </MudButton>
+            </div>
         </MudContainer>
     </MudPaper>
 
 </MudLayout>
 
-<!-- Proveedores globales de MudBlazor -->
 <MudThemeProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 <MudPopoverProvider />
 
 <style>
-    /* Estilos personalizados para el menú desplegable */
-    .mud-popover .mud-list {
-        background-color: #004D40 !important;
+    :root {
+        --teal-0: #E0F2F1;
+        --teal-1: #B2DFDB;
+        --teal-2: #80CBC4;
+        --teal-3: #4DB6AC;
+        --teal-4: #26A69A;
+        --teal-5: #009688;
+        --teal-d1: #00897B;
+        --teal-d2: #00796B;
+        --teal-d3: #00695C;
+        --teal-d4: #004D40;
+        --accent-1: #A7FFEB;
+        --accent-2: #64FFDA;
+        --accent-3: #1DE9B6;
+        --accent-4: #00BFA5;
+        --ink: #083B33;
+        --muted: rgba(8,59,51,.72);
+        --border: rgba(0,77,64,.12);
+        --shadow: rgba(0,77,64,.15);
     }
 
-    .servicios-menu .mud-button-root {
-        color: #4DB6AC !important;
-        font-weight: 500;
+    .aero-layout {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(180deg, var(--teal-0), #F7FFFE 55%, var(--teal-1));
     }
 
-    .servicios-menu .mud-icon-button {
-        color: #4DB6AC !important;
+    /* APPBAR */
+    .aero-appbar {
+        background: rgba(255,255,255,.72) !important;
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(0,77,64,.08);
+        color: var(--ink) !important;
+        box-shadow: 0 10px 30px rgba(0,77,64,.08) !important;
     }
 
-    .aero-icon {
-        color: #4DB6AC;
-        transition: transform .2s ease, color .2s ease;
+    .aero-appbar__inner {
+        width: 100%;
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: .55rem 1.15rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
 
-        .aero-icon:hover {
-            transform: scale(1.1);
-            color: #7fe0d4;
+    .aero-brand {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+    }
+
+    .aero-home {
+        color: var(--teal-d3) !important;
+        background: rgba(0,150,136,.10) !important;
+        border: 1px solid rgba(0,150,136,.12);
+        border-radius: 14px !important;
+        transition: all .25s ease;
+    }
+
+        .aero-home:hover {
+            transform: translateY(-2px) scale(1.03);
+            color: var(--teal-d2) !important;
+            box-shadow: 0 10px 20px rgba(0,77,64,.12), 0 0 12px rgba(29,233,182,.18);
         }
+
+    .aero-brand__text {
+        display: flex;
+        flex-direction: column;
+        gap: .15rem;
+    }
+
+    .aero-brand__badge {
+        width: fit-content;
+        padding: .18rem .55rem;
+        border-radius: 999px;
+        font-size: .72rem;
+        font-weight: 800;
+        color: var(--teal-d3);
+        background: linear-gradient(135deg, rgba(0,150,136,.12), rgba(38,166,154,.08));
+        border: 1px solid rgba(0,150,136,.14);
+    }
+
+    .aero-brand__title {
+        color: var(--teal-d3) !important;
+        font-weight: 900 !important;
+        letter-spacing: 2px;
+        margin: 0;
+        line-height: 1;
+    }
+
+    .aero-nav {
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+        flex-wrap: wrap;
+    }
+
+    .aero-nav-btn {
+        color: var(--teal-d3) !important;
+        border-radius: 12px !important;
+        font-weight: 800 !important;
+        transition: all .22s ease;
+        padding-inline: .75rem !important;
+    }
+
+        .aero-nav-btn:hover {
+            background: rgba(0,150,136,.08) !important;
+            transform: translateY(-1px);
+        }
+
+    .aero-register-btn {
+        color: white !important;
+        border-radius: 12px !important;
+        font-weight: 900 !important;
+        background: linear-gradient(90deg, var(--teal-4), var(--teal-d2)) !important;
+        box-shadow: 0 10px 18px rgba(0,77,64,.16);
+        transition: all .22s ease;
+        padding-inline: .95rem !important;
+    }
+
+        .aero-register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 24px rgba(0,77,64,.22), 0 0 14px rgba(29,233,182,.16);
+        }
+
+    .aero-cart {
+        color: var(--teal-d3) !important;
+        background: rgba(0,150,136,.08) !important;
+        border: 1px solid rgba(0,150,136,.12);
+        border-radius: 14px !important;
+        transition: all .22s ease;
+    }
+
+        .aero-cart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 18px rgba(0,77,64,.12), 0 0 10px rgba(29,233,182,.18);
+        }
+
+    /* MENU */
+    .aero-menu .mud-button-root {
+        color: var(--teal-d3) !important;
+        font-weight: 800 !important;
+        border-radius: 12px !important;
+        transition: all .22s ease;
+    }
+
+        .aero-menu .mud-button-root:hover {
+            background: rgba(0,150,136,.08) !important;
+        }
+
+    .mud-popover.aero-menu-popover .mud-paper,
+    .mud-popover .mud-list {
+        background: rgba(255,255,255,.96) !important;
+        border: 1px solid rgba(0,77,64,.10) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 18px 34px rgba(0,77,64,.14) !important;
+        backdrop-filter: blur(10px);
+        padding: .35rem;
+    }
+
+    .aero-menu-item {
+        color: var(--teal-d3) !important;
+        font-weight: 700 !important;
+        border-radius: 12px !important;
+        transition: all .18s ease;
+    }
+
+        .aero-menu-item:hover {
+            background: rgba(0,150,136,.08) !important;
+        }
+
+    /* MAIN */
+    .aero-main {
+        flex: 1;
+        position: relative;
+        padding-top: 88px;
+        overflow: hidden;
+    }
+
+    .aero-main__bg {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(950px 420px at 12% 8%, rgba(29,233,182,.16), transparent 60%), radial-gradient(760px 340px at 88% 14%, rgba(38,166,154,.14), transparent 58%), linear-gradient(180deg, transparent, rgba(255,255,255,.22));
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .aero-main__content {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+    }
+
+    /* FOOTER */
+    .aero-footer {
+        background: rgba(255,255,255,.72) !important;
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(0,77,64,.08);
+        margin-top: auto;
+    }
+
+    .aero-footer__inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 0;
+        flex-wrap: wrap;
+    }
+
+    .aero-footer__left {
+        display: flex;
+        flex-direction: column;
+        gap: .15rem;
+    }
+
+    .aero-footer__title {
+        color: var(--teal-d3) !important;
+        font-weight: 900 !important;
+    }
+
+    .aero-footer__subtitle {
+        color: var(--muted) !important;
+        font-weight: 600 !important;
+    }
+
+    .aero-footer__links {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+
+    .aero-footer-btn {
+        color: var(--teal-d3) !important;
+        font-weight: 800 !important;
+        border-radius: 12px !important;
+        transition: all .22s ease;
+    }
+
+        .aero-footer-btn:hover {
+            background: rgba(0,150,136,.08) !important;
+            transform: translateY(-1px);
+        }
+
+    /* Responsive */
+    @@media (max-width: 920px) {
+        .aero-appbar__inner {
+            align-items: flex-start;
+            padding-top: .75rem;
+            padding-bottom: .75rem;
+        }
+
+        .aero-nav {
+            justify-content: flex-end;
+        }
+
+        .aero-main {
+            padding-top: 110px;
+        }
+    }
+
+    @@media (max-width: 700px) {
+        .aero-appbar__inner {
+            flex-direction: column;
+            align-items: stretch;
+            gap: .8rem;
+        }
+
+        .aero-nav {
+            justify-content: flex-start;
+        }
+
+        .aero-main {
+            padding-top: 145px;
+        }
+
+        .aero-footer__inner {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+    .aero-brand__logo{
+        display:flex;
+        align-items:center;
+        padding: .35rem .6rem;
+        border-radius: 18px;
+        background: rgba(0,150,136,.10);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0,150,136,.15);
+        box-shadow:
+            0 6px 16px rgba(0,77,64,.10),
+            inset 0 1px 0 rgba(255,255,255,.6);
+
+        transition: all .25s ease;
+    }
+
+    .logo-img{
+        height: 42px;
+        width: auto;
+        display:block;
+        border-radius: 12px;
+        opacity: 0.95;
+    }
+    .aero-brand__logo:hover{
+        transform: translateY(-2px);
+        background: rgba(0,150,136,.16);
+        box-shadow:
+            0 10px 22px rgba(0,77,64,.15),
+            0 0 12px rgba(29,233,182,.15);
+    }
+
+    .aero-brand__logo:hover .logo-img{
+        filter: brightness(1.05) contrast(1.05);
+    }
+
+    .aero-brand__logo::after{
+        content:"";
+        position:absolute;
+        inset:0;
+        border-radius: 18px;
+
+        background: radial-gradient(circle at 50% 50%, rgba(29,233,182,.15), transparent 60%);
+        opacity: 0;
+        transition: opacity .3s ease;
+        pointer-events:none;
+    }
+
+    .aero-brand__logo:hover::after{
+        opacity: 1;
+    }
+
+    .aero-brand__logo{
+        position: relative;
+        overflow: hidden;
+    }
 </style>

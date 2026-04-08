@@ -159,8 +159,9 @@
 
         foreach (var i in Items)
         {
-            sb.AppendLine($"🛸 *{i.Drone.Name}*");
             sb.AppendLine("────────────────────────");
+            sb.AppendLine($"🛸 *{i.Drone.Name}*");
+            
 
             if (!i.IsRent)
             {

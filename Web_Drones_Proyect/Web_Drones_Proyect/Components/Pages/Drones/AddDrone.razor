@@ -4,113 +4,125 @@
 @using Microsoft.AspNetCore.Components.Forms
 
 <!-- Diálogo modal para crear o editar drones -->
-<MudDialog Class="bg-dark-dialog">
+<MudDialog Class="drone-dialog">
 
     <DialogContent>
         <!-- Formulario principal del dron -->
-        <MudForm @ref="_form">
+        <MudForm @ref="_form" Model="_drone">
 
             <MudGrid>
 
                 <!-- COLUMNA IZQUIERDA: datos del dron -->
-                <MudItem xs="12" md="5">
+                <MudItem xs="12" md="5" Class="form-column">
 
-                    <!-- Nombre del dron -->
+                    <MudText Typo="Typo.h6" Class="section-title">
+                        Información del dron
+                    </MudText>
+
                     <MudTextField @bind-Value="_drone.Name"
                                   Label="Nombre"
                                   Required="true"
-                                  Class="white-text" />
+                                  RequiredError="El nombre es obligatorio"
+                                  Class="input-teal" />
 
-                    <!-- Selección de categoría -->
-                    <MudSelect T="int" Label="Categoría"
+                    <MudSelect T="int"
+                               Label="Categoría"
                                @bind-Value="_drone.CategoryID"
                                Required="true"
-                               Class="white-text">
+                               RequiredError="Seleccione una categoría"
+                               Class="input-teal">
                         @foreach (var cat in _categories)
                         {
                             <MudSelectItem Value="@cat.CategoryID">@cat.Name</MudSelectItem>
                         }
                     </MudSelect>
 
-                    <!-- Tipo de dron -->
-                    <MudSelect T="int" Label="Tipo de Dron"
+                    <MudSelect T="int"
+                               Label="Tipo de Dron"
                                @bind-Value="_drone.TypeDroneID"
                                Required="true"
-                               Class="white-text">
+                               RequiredError="Seleccione el tipo de dron"
+                               Class="input-teal">
                         @foreach (var type in _types)
                         {
                             <MudSelectItem Value="@type.TypeDroneID">@type.Name</MudSelectItem>
                         }
                     </MudSelect>
 
-                    <!-- Precio de venta -->
-                    <MudNumericField @bind-Value="_drone.PriceSale"
+                    <MudNumericField T="decimal?"
+                                     @bind-Value="_drone.PriceSale"
                                      Label="Precio Venta"
-                                     T="decimal?"
-                                     Class="white-text" />
-
-                    <!-- Precio de renta -->
-                    <MudNumericField @bind-Value="_drone.PriceRent"
-                                     Label="Precio Renta"
-                                     T="decimal?"
-                                     Class="white-text" />
-
-                    <!-- Estado del dron -->
-                    <MudTextField @bind-Value="_drone.State"
-                                  Label="Estado"
-                                  Required="true"
-                                  Class="white-text" />
-
-                    <!-- Cantidad disponible -->
-                    <MudNumericField @bind-Value="_drone.Stock"
-                                     Label="Stock"
-                                     T="int"
                                      Required="true"
-                                     Class="white-text" />
+                                     Min="0"
+                                     RequiredError="Precio de venta obligatorio"
+                                     Class="input-teal" />
 
-                    <!-- Autonomía de vuelo -->
-                    <MudNumericField @bind-Value="_drone.Autonomy"
+                    <MudNumericField T="decimal?"
+                                     @bind-Value="_drone.PriceRent"
+                                     Label="Precio Renta"
+                                     Required="true"
+                                     Min="0"
+                                     RequiredError="Precio de renta obligatorio"
+                                     Class="input-teal" />
+
+                    <MudSelect T="string"
+                               Label="Estado"
+                               @bind-Value="_drone.State"
+                               Required="true"
+                               RequiredError="Seleccione el estado"
+                               Class="input-teal">
+                        <MudSelectItem Value="@("Disponible")">Disponible</MudSelectItem>
+                        <MudSelectItem Value="@("No disponible")">No disponible</MudSelectItem>
+                    </MudSelect>
+
+                    <MudNumericField T="int"
+                                     @bind-Value="_drone.Stock"
+                                     Label="Stock"
+                                     Required="true"
+                                     Min="0"
+                                     Class="input-teal" />
+
+                    <MudNumericField T="int"
+                                     @bind-Value="_drone.Autonomy"
                                      Label="Autonomía"
-                                     T="int"
-                                     Class="white-text" />
+                                     Min="0"
+                                     Class="input-teal" />
 
-                    <!-- Alcance del dron -->
-                    <MudNumericField @bind-Value="_drone.Scope"
+                    <MudNumericField T="int"
+                                     @bind-Value="_drone.Scope"
                                      Label="Alcance"
-                                     T="int"
-                                     Class="white-text" />
+                                     Required="true"
+                                     Min="0"
+                                     RequiredError="El alcance es obligatorio"
+                                     Class="input-teal" />
 
-                    <!-- Tipo de cámara -->
                     <MudTextField @bind-Value="_drone.Camera"
                                   Label="Cámara"
-                                  Class="white-text" />
+                                  Class="input-teal" />
 
-                    <!-- Descripción del dron -->
                     <MudTextField @bind-Value="_drone.Description"
                                   Label="Descripción"
                                   Lines="3"
-                                  Class="white-text" />
+                                  Class="input-teal" />
 
                 </MudItem>
 
-                <!-- COLUMNA DERECHA: carga de imagen -->
+                <!-- COLUMNA DERECHA: imagen -->
                 <MudItem xs="12" md="7">
 
-                    <MudPaper Class="pa-4 image-box" Elevation="3">
+                    <MudPaper Class="image-card" Elevation="0">
 
-                        <MudText Typo="Typo.h6" Class="mb-3 text-center white-title">
-                            Imagen del Dron
+                        <MudText Typo="Typo.h6" Class="section-title text-center">
+                            Imagen del dron
                         </MudText>
 
-                        <!-- Selector de archivo para subir imagen -->
-                        <InputFile OnChange="UploadImage" class="mb-3" />
+                        <InputFile OnChange="UploadImage" class="upload-input" />
 
-                        <!-- Vista previa de la imagen -->
                         @if (!string.IsNullOrEmpty(_imagePath))
                         {
                             <MudImage Src="@_imagePath"
                                       Alt="Preview"
-                                      Class="preview-img mt-2" />
+                                      Class="preview-img" />
                         }
 
                     </MudPaper>
@@ -122,95 +134,121 @@
         </MudForm>
     </DialogContent>
 
-    <!-- Botones de acción del formulario -->
+    <!-- Botones de acción -->
     <DialogActions>
         <div class="actions-container">
-            <MudButton OnClick="Cancel"
-                       Variant="Variant.Outlined"
-                       Style="color:#ff0060; border-color:#ff0060;">
+            <MudButton OnClick="Cancel" Class="btn-cancel">
                 Cancelar
             </MudButton>
 
-            <MudButton OnClick="Save"
-                       Variant="Variant.Filled"
-                       Style="background-color:#26A69A; color: black;">
+            <MudButton OnClick="Save" Class="btn-save">
                 Guardar
             </MudButton>
         </div>
     </DialogActions>
 
 </MudDialog>
-
 <style>
+    :root {
+        --teal-1: #E0F2F1;
+        --teal-2: #B2DFDB;
+        --teal-3: #26A69A;
+        --teal-4: #00796B;
+        --teal-5: #004D40;
+    }
 
-    /* Estilos del modal en modo oscuro */
-    .bg-dark-dialog {
-        background-color: #121212 !important;
+    /* ===== DIALOG ===== */
+    .drone-dialog {
+        background: linear-gradient(180deg, var(--teal-5), #0f1f1c);
+        color: white;
+        border-radius: 22px;
+        box-shadow: 0 20px 50px rgba(0,0,0,.5);
+    }
+
+    /* ===== COLUMNAS ===== */
+    .form-column {
+        display: flex;
+        flex-direction: column;
+        gap: .75rem;
+    }
+
+    /* ===== TITULOS ===== */
+    .section-title {
+        font-weight: 900;
+        margin-bottom: .5rem;
+        color: var(--teal-2);
+    }
+
+    /* ===== INPUTS ===== */
+    .input-teal input,
+    .input-teal textarea,
+    .input-teal label {
         color: white !important;
     }
 
-    /* Estilo de inputs en blanco */
-    .white-text input,
-    .white-text textarea,
-    .white-text label {
-        color: white !important;
+    .input-teal .mud-input-root {
+        background: rgba(255,255,255,.05);
+        border-radius: 12px;
     }
 
-    .white-text .mud-input-slot {
-        color: white !important;
-    }
-
-    /* Estilos del menú desplegable */
+    /* ===== SELECT DROPDOWN ===== */
     .mud-popover .mud-list {
-        background-color: #1e1e1e !important;
+        background-color: #102421 !important;
     }
 
     .mud-popover .mud-list-item {
-        color: #4DB6AC !important;
-        transition: background-color 0.2s ease;
+        color: var(--teal-2) !important;
     }
 
-        .mud-popover .mud-list-item.mud-selected-item {
-            color: #4DB6AC !important;
-        }
-
-        .mud-popover .mud-list-item:hover {
-            background-color: #004D40 !important;
-            color: #4DB6AC !important;
-        }
-
-    /* Título de la sección de imagen */
-    .white-title {
-        color: white;
-        font-weight: 600;
+    .mud-popover .mud-list-item:hover {
+        background-color: var(--teal-4) !important;
     }
 
-    /* Contenedor de imagen */
-    .image-box {
-        background-color: #1e1e1e;
-        border-radius: 12px;
+    /* ===== IMAGEN ===== */
+    .image-card {
+        background: rgba(255,255,255,.06);
+        border-radius: 20px;
+        padding: 1.5rem;
         text-align: center;
     }
 
-    /* Imagen de preview */
-    .preview-img {
-        width: 100%;
-        max-height: 250px;
-        object-fit: contain;
-        border-radius: 10px;
+    .upload-input {
+        margin-bottom: .75rem;
+        color: white;
     }
 
-    /* Botones del diálogo */
+    .preview-img {
+        width: 100%;
+        max-height: 260px;
+        object-fit: contain;
+        border-radius: 14px;
+    }
+
+    /* ===== BOTONES ===== */
     .actions-container {
         width: 100%;
         display: flex;
         justify-content: center;
-        gap: 20px;
-        padding: 16px 0;
+        gap: 1rem;
+        padding: 1rem 0;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #26A69A, #00796B);
+        color: white;
+        font-weight: 900;
+        border-radius: 999px;
+        padding: .55rem 1.4rem;
+        box-shadow: 0 8px 22px rgba(0,0,0,.3);
+    }
+
+    .btn-cancel {
+        color: #FF6B6B;
+        border-radius: 999px;
+        font-weight: 800;
     }
 
     .mud-dialog-titlebar-close {
-        color: white !important;
+        color: var(--teal-2) !important;
     }
-
 </style>

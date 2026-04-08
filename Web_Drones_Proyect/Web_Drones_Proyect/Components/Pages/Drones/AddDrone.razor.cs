@@ -19,6 +19,7 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
         [Inject] private IRepository<Category> CategoryRepository { get; set; } = default!;
         [Inject] private IRepository<TypeDrones> TypeRepository { get; set; } = default!;
         [Inject] private IRepository<ImagesDrones> ImageRepository { get; set; } = default!;
+        [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
         // Instancia del diálogo MudBlazor
         [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
@@ -82,76 +83,81 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
         }
 
         // Guarda el dron (crear o actualizar)
-        private async Task Save()
+private async Task Save()
+{
+    await _form!.Validate();
+
+    if (!_form.IsValid)
+        return;
+
+    // Imagen obligatoria
+    if (string.IsNullOrWhiteSpace(_imagePath))
+    {
+        Snackbar.Add("La imagen del dron es obligatoria", Severity.Error);
+        return;
+    }
+
+    // Cámara por defecto
+    if (string.IsNullOrWhiteSpace(_drone.Camera))
+        _drone.Camera = "Sin cámara";
+
+    if (DroneToEdit == null)
+    {
+        // Crear nuevo dron
+        await DroneRepository.AddAsync(_drone);
+        await DroneRepository.SaveChangesAsync();
+
+        var image = new ImagesDrones
         {
-            await _form!.Validate();
-            if (!_form.IsValid) return;
+            DronID = _drone.DronID,
+            UrlImageDron = _imagePath
+        };
 
-            if (DroneToEdit == null)
-            {
-                // Crear nuevo dron
-                await DroneRepository.AddAsync(_drone);
-                await DroneRepository.SaveChangesAsync();
+        await ImageRepository.AddAsync(image);
+        await ImageRepository.SaveChangesAsync();
+    }
+    else
+    {
+        // Actualizar dron existente
+        DroneToEdit.Name = _drone.Name;
+        DroneToEdit.CategoryID = _drone.CategoryID;
+        DroneToEdit.TypeDroneID = _drone.TypeDroneID;
+        DroneToEdit.PriceSale = _drone.PriceSale;
+        DroneToEdit.PriceRent = _drone.PriceRent;
+        DroneToEdit.State = _drone.State;
+        DroneToEdit.Stock = _drone.Stock;
+        DroneToEdit.Autonomy = _drone.Autonomy;
+        DroneToEdit.Scope = _drone.Scope;
+        DroneToEdit.Camera = _drone.Camera;
+        DroneToEdit.Description = _drone.Description;
 
-                // Guardar imagen asociada
-                if (!string.IsNullOrWhiteSpace(_imagePath))
-                {
-                    var image = new ImagesDrones
-                    {
-                        DronID = _drone.DronID,
-                        UrlImageDron = _imagePath
-                    };
+        DroneRepository.Update(DroneToEdit);
+        await DroneRepository.SaveChangesAsync();
 
-                    await ImageRepository.AddAsync(image);
-                    await ImageRepository.SaveChangesAsync();
-                }
-            }
-            else
-            {
-                // Actualizar dron existente
-                DroneToEdit.Name = _drone.Name;
-                DroneToEdit.CategoryID = _drone.CategoryID;
-                DroneToEdit.TypeDroneID = _drone.TypeDroneID;
-                DroneToEdit.PriceSale = _drone.PriceSale;
-                DroneToEdit.PriceRent = _drone.PriceRent;
-                DroneToEdit.State = _drone.State;
-                DroneToEdit.Stock = _drone.Stock;
-                DroneToEdit.Autonomy = _drone.Autonomy;
-                DroneToEdit.Scope = _drone.Scope;
-                DroneToEdit.Camera = _drone.Camera;
-                DroneToEdit.Description = _drone.Description;
+        // Imagen
+        var existingImage = DroneToEdit.Images.FirstOrDefault();
 
-                DroneRepository.Update(DroneToEdit);
-                await DroneRepository.SaveChangesAsync();
-
-                // Actualiza o crea la imagen del dron
-                if (!string.IsNullOrWhiteSpace(_imagePath))
-                {
-                    var existingImage = DroneToEdit.Images.FirstOrDefault();
-
-                    if (existingImage != null)
-                    {
-                        existingImage.UrlImageDron = _imagePath;
-                        ImageRepository.Update(existingImage);
-                    }
-                    else
-                    {
-                        var image = new ImagesDrones
-                        {
-                            DronID = DroneToEdit.DronID,
-                            UrlImageDron = _imagePath
-                        };
-
-                        await ImageRepository.AddAsync(image);
-                    }
-
-                    await ImageRepository.SaveChangesAsync();
-                }
-            }
-
-            // Cierra el diálogo indicando éxito
-            MudDialog.Close(DialogResult.Ok(true));
+        if (existingImage != null)
+        {
+            existingImage.UrlImageDron = _imagePath;
+            ImageRepository.Update(existingImage);
         }
+        else
+        {
+            var image = new ImagesDrones
+            {
+                DronID = DroneToEdit.DronID,
+                UrlImageDron = _imagePath
+            };
+
+            await ImageRepository.AddAsync(image);
+        }
+
+        await ImageRepository.SaveChangesAsync();
+    }
+
+    MudDialog.Close(DialogResult.Ok(true));
+}
 
         // Cancela el diálogo
         private void Cancel()

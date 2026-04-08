@@ -14,7 +14,7 @@ El proyecto fue diseñado con un enfoque académico y práctico, priorizando la 
 3). MudBlazor (UI Components)
 4). SQL Server
 5). Entity Framework Core
-6). C#
+6). C# 8
 7). HTML / CSS
 
 ## Funcionalidades principales

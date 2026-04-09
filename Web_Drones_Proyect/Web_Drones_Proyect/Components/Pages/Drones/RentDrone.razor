@@ -3,31 +3,13 @@
 @using Microsoft.EntityFrameworkCore
 @using MudBlazor
 @using Web_Drones_Proyect.Data
+@using Web_Drones_Proyect.Enums
 @using Web_Drones_Proyect.Models
 @using Microsoft.AspNetCore.Authorization
 @inject AuthenticationStateProvider AuthStateProvider
 @using System.Security.Claims
+@using Web_Drones_Proyect.Services
 
-<AuthorizeView>
-    <Authorized>
-        <MudText Color="Color.Success">AUTORIZADO</MudText>
-    </Authorized>
-    <NotAuthorized>
-        <MudText Color="Color.Error">NO AUTORIZADO</MudText>
-    </NotAuthorized>
-</AuthorizeView>
-
-<AuthorizeView Roles="ADMIN">
-    <Authorized>
-        <MudText Color="Color.Primary">SOY ADMIN</MudText>
-    </Authorized>
-</AuthorizeView>
-
-<MudText>
-    Roles actuales: @string.Join(", ", _user?.Claims
-        .Where(c => c.Type == ClaimTypes.Role)
-        .Select(c => c.Value) ?? new List<string>())
-</MudText>
 
 <MudContainer Class="mt-10 d-flex flex-column align-items-center">
 
@@ -74,34 +56,36 @@
                         <!-- Botones de acciones -->
                         <div class="button-row">
 
-                            <!-- Navega a la página de detalles -->
-                            <MudButton Variant="Variant.Filled"
-                                       Style="background-color:#4DB6AC; color:white;"
+                            <AuthorizeView Roles="ADMIN,CLIENTE">
+                                <MudButton Class="drone-btn btn-add"
+                                           StartIcon="@Icons.Material.Filled.AddShoppingCart"
+                                           OnClick="@(() => AddToCartAsync(drone))">
+                                    Añadir
+                                </MudButton>
+                            </AuthorizeView>
+
+                            <MudButton Class="drone-btn btn-view"
+                                       StartIcon="@Icons.Material.Filled.Visibility"
                                        OnClick="@(() => Nav.NavigateTo($"/drones/details/{drone.DronID}"))">
                                 Ver
                             </MudButton>
 
-                            <!-- Opciones solo visibles para ADMIN -->
                             <AuthorizeView Roles="ADMIN">
-
                                 <Authorized>
 
-                                    <!-- Editar dron -->
-                                    <MudButton Variant="Variant.Filled"
-                                               Style="background-color:black; color:white;"
+                                    <MudButton Class="drone-btn btn-edit"
+                                               StartIcon="@Icons.Material.Filled.Edit"
                                                OnClick="@(() => EditDroneAsync(drone))">
                                         Editar
                                     </MudButton>
 
-                                    <!-- Eliminar dron -->
-                                    <MudButton Variant="Variant.Filled"
-                                               Style="background-color:#ff0000; color:white;"
+                                    <MudButton Class="drone-btn btn-delete"
+                                               StartIcon="@Icons.Material.Filled.Delete"
                                                OnClick="@(() => DeleteDroneAsync(drone.DronID))">
                                         Borrar
                                     </MudButton>
 
                                 </Authorized>
-
                             </AuthorizeView>
 
                         </div>
@@ -129,6 +113,8 @@
     [Inject] private ApplicationDbContext _context { get; set; } = default!;
     [Inject] private IDialogService DialogService { get; set; } = default!;
     [Inject] private NavigationManager Nav { get; set; } = default!;
+    [Inject] private CartService CartService { get; set; } = default!;
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
     private List<Drone> _drones = new();
     private ClaimsPrincipal? _user;
@@ -209,6 +195,25 @@
             .ToListAsync();
 
         StateHasChanged();
+    }
+
+    private async Task AddToCartAsync(Drone drone)
+    {
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userId = int.Parse(auth.User
+            .FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        var result = await CartService.AddItemAsync(
+            userId,
+            drone.DronID,
+            true, // 👉 TRUE = RENTA
+            1
+        );
+
+        if (result == AddToCartResult.Success)
+            Snackbar.Add("Dron añadido al carrito (renta)", Severity.Success);
+        else
+            Snackbar.Add("Dron no disponible para renta", Severity.Warning);
     }
 }
 

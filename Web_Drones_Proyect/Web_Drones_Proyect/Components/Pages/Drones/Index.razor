@@ -86,44 +86,36 @@
                         <!-- Botones de acciones -->
                         <div class="button-row">
 
-                            <!-- Navega a la página de detalles -->
-
                             <AuthorizeView Roles="ADMIN,CLIENTE">
-                                <MudButton Variant="Variant.Filled"
-                                           Color="Color.Success"
+                                <MudButton Class="drone-btn btn-add"
                                            StartIcon="@Icons.Material.Filled.AddShoppingCart"
                                            OnClick="@(() => AddToCartAsync(drone))">
                                     Añadir
                                 </MudButton>
                             </AuthorizeView>
 
-                            <MudButton Variant="Variant.Filled"
-                                       Style="background-color:#4DB6AC; color:white;"
+                            <MudButton Class="drone-btn btn-view"
+                                       StartIcon="@Icons.Material.Filled.Visibility"
                                        OnClick="@(() => Nav.NavigateTo($"/drones/details/{drone.DronID}"))">
                                 Ver
                             </MudButton>
 
-                            <!-- Opciones solo visibles para ADMIN -->
                             <AuthorizeView Roles="ADMIN">
-
                                 <Authorized>
 
-                                    <!-- Editar dron -->
-                                    <MudButton Variant="Variant.Filled"
-                                               Style="background-color:black; color:white;"
+                                    <MudButton Class="drone-btn btn-edit"
+                                               StartIcon="@Icons.Material.Filled.Edit"
                                                OnClick="@(() => EditDroneAsync(drone))">
                                         Editar
                                     </MudButton>
 
-                                    <!-- Eliminar dron -->
-                                    <MudButton Variant="Variant.Filled"
-                                               Style="background-color:#ff0000; color:white;"
+                                    <MudButton Class="drone-btn btn-delete"
+                                               StartIcon="@Icons.Material.Filled.Delete"
                                                OnClick="@(() => DeleteDroneAsync(drone.DronID))">
                                         Borrar
                                     </MudButton>
 
                                 </Authorized>
-
                             </AuthorizeView>
 
                         </div>
@@ -248,6 +240,71 @@
         align-items: flex-end;
         text-align: right;
     }
+    /* ===================== */
+    /* BOTONES COMPACTOS */
+    /* ===================== */
+
+    .drone-btn {
+        min-width: 90px; /* antes 120 */
+        height: 34px; /* antes 42 */
+        padding: 0 12px;
+        border-radius: 8px; /* más compacto */
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        transition: all 0.2s ease;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+    }
+
+        /* Hover más sutil */
+        .drone-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        /* Click */
+        .drone-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* Iconos más pequeños */
+        .drone-btn .mud-icon-root {
+            font-size: 16px;
+            margin-right: 4px;
+        }
+
+    /* ===================== */
+    /* COLORES FLOW WEBDRONES */
+    /* ===================== */
+
+    .btn-add {
+        background: linear-gradient(135deg, #009688, #00796B);
+        color: #ffffff;
+    }
+
+    .btn-view {
+        background: linear-gradient(135deg, #4DB6AC, #26A69A);
+        color: #ffffff;
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #1f2933, #000000);
+        color: #ffffff;
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #c62828, #8e0000);
+        color: #ffffff;
+    }
+
+        /* Hover con identidad (sutil, elegante) */
+        .btn-add:hover,
+        .btn-view:hover,
+        .btn-edit:hover,
+        .btn-delete:hover {
+            filter: brightness(1.08);
+        }
 
     /* Responsive para móviles */
     /* Las media siempre deben tener doble arroba (ALT 64) por un bug de Blazor */

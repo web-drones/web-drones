@@ -85,14 +85,14 @@
                     </div>
 
                     @* Botón para eliminar el artículo específico del carrito mediante su ID *@
-                    <MudButton Class="btn-remove"
+                    <MudButton Class="drone-btn btn-delete"
                                OnClick="@(() => Remove(item.CartItemID))">
                         Quitar
                     </MudButton>
 
                     @if (!item.IsRent && item.CanBeRented)
                     {
-                        <MudButton Color="Color.Primary"
+                        <MudButton Class="drone-btn btn-edit ms-2"
                                    Variant="Variant.Outlined"
                                    OnClick="@(() => OpenRentModal(item))">
                             Rentar
@@ -100,7 +100,7 @@
                     }
                     else if (item.IsRent)
                     {
-                        <MudButton Color="Color.Primary"
+                        <MudButton Class="drone-btn btn-edit ms-2"
                                    Variant="Variant.Outlined"
                                    OnClick="@(() => OpenRentModal(item))">
                             Rentar
@@ -271,23 +271,6 @@
         background: linear-gradient(135deg, #2ECC71, #1E8449);
     }
 
-    /* ===== BOTÓN QUITAR ===== */
-
-    .btn-remove {
-        margin-top: .3rem;
-        align-self: flex-start;
-        font-weight: 800;
-        color: #B71C1C;
-        background: transparent;
-        border-radius: 999px;
-        padding: .35rem .8rem;
-        transition: all .25s ease;
-    }
-
-        .btn-remove:hover {
-            background: rgba(183,28,28,.12);
-            transform: translateX(4px);
-        }
 
     /* ===== RESPONSIVE ===== */
     @@media (max-width: 1100px) {

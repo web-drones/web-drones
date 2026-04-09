@@ -5,6 +5,7 @@
 @inject CartService CartService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ISnackbar Snackbar
+@inject NavigationManager Nav
 
 <MudDialog>
     <DialogContent>
@@ -60,19 +61,47 @@
     private async Task ConfirmRent()
     {
         var auth = await AuthStateProvider.GetAuthenticationStateAsync();
-        var userId = int.Parse(
-            auth.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value
-        );
+        var user = auth.User;
 
-        await CartService.AddRentItemAsync(
-            userId,
-            Item.DronID,
-            StartDate!.Value,
-            EndDate!.Value,
-            Quantity
-        );
+        if (!user.Identity!.IsAuthenticated)
+        {
+            Snackbar.Add("Debe iniciar sesión para rentar", Severity.Warning);
+            return;
+        }
 
-        Snackbar.Add("Renta añadida al carrito", Severity.Success);
+        var userName = user.Identity.Name ?? "Cliente";
+        var email = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
+
+        var sb = new System.Text.StringBuilder();
+        var now = DateTime.Now;
+
+        sb.AppendLine("🛸 *Solicitud de Renta – Web Drones*");
+        sb.AppendLine("━━━━━━━━━━━━━━━━━━");
+        sb.AppendLine($"👤 *Cliente:* {userName}");
+        sb.AppendLine($"📧 *Correo:* {email}");
+        sb.AppendLine($"📅 *Fecha:* {now:dd/MM/yyyy} – {now:hh:mm tt}");
+        sb.AppendLine();
+        sb.AppendLine("📦 *Detalle de la renta:*");
+        sb.AppendLine("────────────────────────");
+        sb.AppendLine($"🛸 *{Item.Drone.Name}*");
+        sb.AppendLine($"• Cantidad: {Quantity}");
+        sb.AppendLine($"• Desde: {StartDate:dd/MM/yyyy}");
+        sb.AppendLine($"• Hasta: {EndDate:dd/MM/yyyy}");
+        sb.AppendLine($"• Días: {RentDays}");
+        sb.AppendLine($"• Precio por día: {Item.Drone.PriceRent!.Value:C}");
+        sb.AppendLine($"• Total renta: {RentTotal:C}");
+        sb.AppendLine();
+        sb.AppendLine("Quedo atento para confirmar disponibilidad ✅");
+        sb.AppendLine("Gracias por confiar en *Web Drones* 🚀");
+        sb.AppendLine();
+        sb.AppendLine("⚠️ *La renta queda sujeta a confirmación por nuestro equipo.*");
+
+        var message = Uri.EscapeDataString(sb.ToString());
+        var phone = "18496517787";
+        var url = $"https://wa.me/{phone}?text={message}";
+
+        Nav.NavigateTo(url, true);
+
         MudDialog.Close(DialogResult.Ok(true));
     }
 

@@ -41,14 +41,16 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
         private string? _imagePath;
 
         // Inicializa datos necesarios del formulario
-        protected override async Task OnInitializedAsync()
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
+            if (!firstRender) return;
+
             _categories = await CategoryRepository.GetAllAsync();
             _types = await TypeRepository.GetAllAsync();
 
             if (DroneToEdit != null)
             {
-                // Copia los datos del dron a editar
                 _drone = new Drone
                 {
                     DronID = DroneToEdit.DronID,
@@ -57,7 +59,7 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
                     TypeDroneID = DroneToEdit.TypeDroneID,
                     PriceSale = DroneToEdit.PriceSale,
                     PriceRent = DroneToEdit.PriceRent,
-                    State = DroneToEdit.State,
+                    State = DroneToEdit.State?.Trim(), // 👈 IMPORTANTE
                     Stock = DroneToEdit.Stock,
                     Autonomy = DroneToEdit.Autonomy,
                     Scope = DroneToEdit.Scope,
@@ -66,98 +68,119 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
                     Images = DroneToEdit.Images
                 };
 
-                // Obtiene la imagen existente
                 _imagePath = DroneToEdit.Images.FirstOrDefault()?.UrlImageDron;
             }
-            else
-            {
-                // Valores por defecto al crear un nuevo dron
-                _drone.State = "Disponible";
 
-                if (_categories.Any())
-                    _drone.CategoryID = _categories.First().CategoryID;
-
-                if (_types.Any())
-                    _drone.TypeDroneID = _types.First().TypeDroneID;
-            }
+            await InvokeAsync(StateHasChanged);
         }
 
         // Guarda el dron (crear o actualizar)
-private async Task Save()
-{
-    await _form!.Validate();
-
-    if (!_form.IsValid)
-        return;
-
-    // Imagen obligatoria
-    if (string.IsNullOrWhiteSpace(_imagePath))
-    {
-        Snackbar.Add("La imagen del dron es obligatoria", Severity.Error);
-        return;
-    }
-
-    // Cámara por defecto
-    if (string.IsNullOrWhiteSpace(_drone.Camera))
-        _drone.Camera = "Sin cámara";
-
-    if (DroneToEdit == null)
-    {
-        // Crear nuevo dron
-        await DroneRepository.AddAsync(_drone);
-        await DroneRepository.SaveChangesAsync();
-
-        var image = new ImagesDrones
+        private bool IsValidMoney(decimal? value)
         {
-            DronID = _drone.DronID,
-            UrlImageDron = _imagePath
-        };
+            if (!value.HasValue)
+                return false;
 
-        await ImageRepository.AddAsync(image);
-        await ImageRepository.SaveChangesAsync();
-    }
-    else
-    {
-        // Actualizar dron existente
-        DroneToEdit.Name = _drone.Name;
-        DroneToEdit.CategoryID = _drone.CategoryID;
-        DroneToEdit.TypeDroneID = _drone.TypeDroneID;
-        DroneToEdit.PriceSale = _drone.PriceSale;
-        DroneToEdit.PriceRent = _drone.PriceRent;
-        DroneToEdit.State = _drone.State;
-        DroneToEdit.Stock = _drone.Stock;
-        DroneToEdit.Autonomy = _drone.Autonomy;
-        DroneToEdit.Scope = _drone.Scope;
-        DroneToEdit.Camera = _drone.Camera;
-        DroneToEdit.Description = _drone.Description;
-
-        DroneRepository.Update(DroneToEdit);
-        await DroneRepository.SaveChangesAsync();
-
-        // Imagen
-        var existingImage = DroneToEdit.Images.FirstOrDefault();
-
-        if (existingImage != null)
-        {
-            existingImage.UrlImageDron = _imagePath;
-            ImageRepository.Update(existingImage);
+            return value.Value >= 0 && value.Value <= 999999999.99m;
         }
-        else
+
+        private async Task Save()
         {
-            var image = new ImagesDrones
+            await _form!.Validate();
+
+            if (!_form.IsValid)
+                return;
+
+            // Validación de imagen
+            if (string.IsNullOrWhiteSpace(_imagePath))
             {
-                DronID = DroneToEdit.DronID,
-                UrlImageDron = _imagePath
-            };
+                Snackbar.Add("La imagen del dron es obligatoria", Severity.Error);
+                return;
+            }
 
-            await ImageRepository.AddAsync(image);
+            // Validación de precios (evita overflow SQL)
+            if (!IsValidMoney(_drone.PriceSale))
+            {
+                Snackbar.Add("El precio de venta es demasiado grande (máx: 999,999,999.99)", Severity.Error);
+                return;
+            }
+
+            if (!IsValidMoney(_drone.PriceRent))
+            {
+                Snackbar.Add("El precio de renta es demasiado grande (máx: 999,999,999.99)", Severity.Error);
+                return;
+            }
+
+            // Valor por defecto
+            if (string.IsNullOrWhiteSpace(_drone.Camera))
+                _drone.Camera = "Sin cámara";
+
+            try
+            {
+                if (DroneToEdit == null)
+                {
+                    // Crear
+                    await DroneRepository.AddAsync(_drone);
+                    await DroneRepository.SaveChangesAsync();
+
+                    var image = new ImagesDrones
+                    {
+                        DronID = _drone.DronID,
+                        UrlImageDron = _imagePath
+                    };
+
+                    await ImageRepository.AddAsync(image);
+                    await ImageRepository.SaveChangesAsync();
+
+                    Snackbar.Add("Dron creado correctamente", Severity.Success);
+                }
+                else
+                {
+                    // Editar
+                    DroneToEdit.Name = _drone.Name;
+                    DroneToEdit.CategoryID = _drone.CategoryID;
+                    DroneToEdit.TypeDroneID = _drone.TypeDroneID;
+                    DroneToEdit.PriceSale = _drone.PriceSale;
+                    DroneToEdit.PriceRent = _drone.PriceRent;
+                    DroneToEdit.State = _drone.State;
+                    DroneToEdit.Stock = _drone.Stock;
+                    DroneToEdit.Autonomy = _drone.Autonomy;
+                    DroneToEdit.Scope = _drone.Scope;
+                    DroneToEdit.Camera = _drone.Camera;
+                    DroneToEdit.Description = _drone.Description;
+
+                    DroneRepository.Update(DroneToEdit);
+                    await DroneRepository.SaveChangesAsync();
+
+                    var existingImage = DroneToEdit.Images.FirstOrDefault();
+
+                    if (existingImage != null)
+                    {
+                        existingImage.UrlImageDron = _imagePath;
+                        ImageRepository.Update(existingImage);
+                    }
+                    else
+                    {
+                        var image = new ImagesDrones
+                        {
+                            DronID = DroneToEdit.DronID,
+                            UrlImageDron = _imagePath
+                        };
+
+                        await ImageRepository.AddAsync(image);
+                    }
+
+                    await ImageRepository.SaveChangesAsync();
+
+                    Snackbar.Add("Dron actualizado correctamente", Severity.Success);
+                }
+
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+            }
         }
-
-        await ImageRepository.SaveChangesAsync();
-    }
-
-    MudDialog.Close(DialogResult.Ok(true));
-}
 
         // Cancela el diálogo
         private void Cancel()

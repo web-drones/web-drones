@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\images\drones\" />
+    <Folder Include="wwwroot\ImgCarrusel\" />
   </ItemGroup>
 
 </Project>

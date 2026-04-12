@@ -69,30 +69,51 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
                 .Include(d => d.Images)
                 .FirstOrDefaultAsync(d => d.DronID == droneId);
 
-            if (drone != null)
+            if (drone == null)
             {
-                // Elimina archivos físicos de las imágenes
-                foreach (var img in drone.Images)
-                {
-                    var filePath = Path.Combine(
-                        Environment.CurrentDirectory,
-                        "wwwroot",
-                        "images",
-                        "drones",
-                        Path.GetFileName(img.UrlImageDron));
-
-                    if (File.Exists(filePath))
-                        File.Delete(filePath);
-                }
-
-                // Elimina el dron de la base de datos
-                _context.Drones.Remove(drone);
-                await _context.SaveChangesAsync();
-
-                // Recarga la lista de drones
-                _drones = await _context.Drones.Include(d => d.Images).ToListAsync();
-                StateHasChanged();
+                Snackbar.Add("El dron no existe o ya fue eliminado", Severity.Warning);
+                return;
             }
+
+            // 🔥 1. Eliminar items del carrito relacionados al dron
+            var cartItems = _context.CartItems
+                .Where(c => c.DronID == droneId);
+
+            _context.CartItems.RemoveRange(cartItems);
+
+            await _context.SaveChangesAsync();
+
+            // 🔥 2. Eliminar imágenes físicas del servidor
+            foreach (var img in drone.Images)
+            {
+                if (string.IsNullOrWhiteSpace(img.UrlImageDron))
+                    continue;
+
+                var filePath = Path.Combine(
+                    Environment.CurrentDirectory,
+                    "wwwroot",
+                    "images",
+                    "drones",
+                    Path.GetFileName(img.UrlImageDron)
+                );
+
+                if (File.Exists(filePath))
+                    File.Delete(filePath);
+            }
+
+            // 🔥 3. Eliminar el dron
+            _context.Drones.Remove(drone);
+            await _context.SaveChangesAsync();
+
+            // 🔄 4. Recargar lista
+            _drones = await _context.Drones
+                .Include(d => d.Images)
+                .ToListAsync();
+
+            StateHasChanged();
+
+            // ✅ NOTIFICACIÓN DE ÉXITO
+            Snackbar.Add("Dron eliminado correctamente", Severity.Success);
         }
 
         // Agrega un dron al carrito del usuario autenticado y muestra un mensaje según el resultado

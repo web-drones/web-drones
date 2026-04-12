@@ -22,6 +22,20 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
         // Contexto de base de datos
         [Inject] private ApplicationDbContext _context { get; set; } = default!;
 
+        // Controla si la descripción está expandida
+        private bool _showMore = false;
+
+        // Clase dinámica para la descripción
+        protected string DescriptionClass =>
+            _showMore ? "description-text open" : "description-text closed";
+
+        // Texto del botón
+        protected void ToggleDescription()
+        {
+            _showMore = !_showMore;
+            StateHasChanged();
+        }
+
         // Dron cargado desde la base de datos
         private Drone? _drone;
 
@@ -51,29 +65,30 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
 
         private async Task AddToCartAsync()
         {
-            if (_drone == null) return;
+            if (_drone == null)
+                return;
 
             var auth = await AuthStateProvider.GetAuthenticationStateAsync();
             var userId = int.Parse(
                 auth.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value
             );
 
-            // Determinar si es renta o venta
-            bool isRent;
+            bool isRent = false;
 
-            if (_drone.PriceSale.HasValue && !_drone.PriceRent.HasValue)
+            // SOLO renta
+            if (_drone.PriceRent.HasValue && !_drone.PriceSale.HasValue)
             {
-                // Solo venta
-                isRent = false;
-            }
-            else if (!_drone.PriceSale.HasValue && _drone.PriceRent.HasValue)
-            {
-                // Solo renta
                 isRent = true;
             }
-            else
+            // SOLO venta
+            else if (_drone.PriceSale.HasValue && !_drone.PriceRent.HasValue)
             {
-                // Ambos disponibles → por ahora venta por defecto
+                isRent = false;
+            }
+            // AMBOS → aquí decides regla real
+            else if (_drone.PriceSale.HasValue && _drone.PriceRent.HasValue)
+            {
+                // 🔥 regla correcta: por defecto venta (o luego UI de selección)
                 isRent = false;
             }
 
@@ -83,7 +98,6 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
                 isRent
             );
 
-            // Mensajes según resultado
             switch (result)
             {
                 case AddToCartResult.Success:

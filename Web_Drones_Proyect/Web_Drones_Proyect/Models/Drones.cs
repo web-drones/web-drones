@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
+using Web_Drones_Proyect.Enums;
 
 namespace Web_Drones_Proyect.Models
 {
@@ -19,6 +20,45 @@ namespace Web_Drones_Proyect.Models
 
         [Column("PrecioRenta")]
         public decimal? PriceRent { get; set; }
+
+        [NotMapped]
+        public DroneAvailability Availability
+        {
+            get
+            {
+                if (PriceSale.HasValue && PriceRent.HasValue)
+                    return DroneAvailability.Both;
+
+                if (PriceSale.HasValue)
+                    return DroneAvailability.Sale;
+
+                if (PriceRent.HasValue)
+                    return DroneAvailability.Rent;
+
+                return DroneAvailability.Sale;
+            }
+        }
+
+        [NotMapped]
+        public string AvailabilityText
+        {
+            get
+            {
+                bool hasSale = PriceSale.HasValue && PriceSale > 0;
+                bool hasRent = PriceRent.HasValue && PriceRent > 0;
+
+                if (hasSale && hasRent)
+                    return "Venta / Renta";
+
+                if (hasSale)
+                    return "Solo Venta";
+
+                if (hasRent)
+                    return "Solo Renta";
+
+                return "No disponible";
+            }
+        }
 
         [Required]
         [Column("Estado")]

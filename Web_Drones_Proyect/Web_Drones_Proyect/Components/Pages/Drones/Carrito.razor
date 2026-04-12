@@ -68,7 +68,11 @@
                     @* Especificaciones técnicas del dron y tipo de precio aplicado *@
                     <div class="specs">
                         <span>📷 @item.Drone.Camera</span>
-                        <span>💼 @item.AvailabilityType</span>
+                        <span>
+                            <span>
+                                @(item.IsRent ? "🗓️ Renta" : "💰 Venta")
+                            </span>
+                        </span>
                     </div>
 
                     <div class="price">

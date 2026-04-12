@@ -19,24 +19,19 @@
                  TData="object">
 
         <!-- Slide 1 -->
-        <MudCarouselItem Transition="Transition.Slide" Color="Color.Primary">
-            <div class="d-flex" style="height:100%">
-                <MudIcon Class="mx-auto my-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="Size.Large" />
-            </div>
-        </MudCarouselItem>
-
-        <!-- Slide 2 -->
-        <MudCarouselItem Transition="Transition.Slide" Color="Color.Secondary">
-            <div class="d-flex" style="height:100%">
-                <MudIcon Class="mx-auto my-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="Size.Large" />
-            </div>
-        </MudCarouselItem>
-
-        <!-- Slide 3 -->
         <MudCarouselItem Transition="Transition.Slide">
-            <div class="d-flex" style="height:100%">
-                <MudIcon Class="mx-auto my-auto" Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Primary" Size="Size.Large" />
-            </div>
+            <img src="ImgCarrusel/drone1.png"
+                 style="width:100%; height:100%; object-fit:cover;" />
+        </MudCarouselItem>
+
+        <MudCarouselItem Transition="Transition.Slide">
+            <img src="ImgCarrusel/drone2.png"
+                 style="width:100%; height:100%; object-fit:cover;" />
+        </MudCarouselItem>
+
+        <MudCarouselItem Transition="Transition.Slide">
+            <img src="ImgCarrusel/drone3.png"
+                 style="width:100%; height:100%; object-fit:cover;" />
         </MudCarouselItem>
 
     </MudCarousel>
@@ -74,14 +69,47 @@
 
                         <!-- Nombre -->
                         <MudText Typo="Typo.h5" Class="mb-3">@drone.Name</MudText>
+                        <div class="drone-highlights">
 
-                        <!-- Descripción -->
-                        <MudText Typo="Typo.body2" Class="mb-3">@drone.Description</MudText>
+                            <!-- CÁMARA -->
+                            <div class="highlight-card main">
+                                <div class="highlight-text">
+                                    <span class="highlight-title">
+                                        <MudIcon Icon="@Icons.Material.Filled.PhotoCamera" Class="inline-icon" />
+                                        Cámara
+                                    </span>
+                                    <span class="highlight-value">
+                                        @drone.Camera
+                                    </span>
+                                </div>
+                            </div>
 
-                        <!-- Precio -->
-                        <MudText Typo="Typo.subtitle2" Class="mb-3">
-                            Precio Venta: @drone.PriceSale
-                        </MudText>
+                            <!-- FEATURES SECUNDARIOS -->
+                            <div class="highlight-row">
+
+                                <div class="highlight-card mini">
+                                    <div class="highlight-text">
+                                        <span class="highlight-title">
+                                            <MudIcon Icon="@Icons.Material.Filled.BatteryChargingFull" Class="inline-icon" />
+                                            Autonomía
+                                        </span>
+                                        <span class="highlight-value">@drone.Autonomy min</span>
+                                    </div>
+                                </div>
+
+                                <div class="highlight-card mini">
+                                    <div class="highlight-text">
+                                        <span class="highlight-title">
+                                            <MudIcon Icon="@Icons.Material.Filled.SettingsInputAntenna" Class="inline-icon" />
+                                            Alcance
+                                        </span>
+                                        <span class="highlight-value">@drone.Scope km</span>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
 
                         <!-- Botones de acciones -->
                         <div class="button-row">

@@ -45,13 +45,47 @@
                         <!-- Nombre -->
                         <MudText Typo="Typo.h5" Class="mb-3">@drone.Name</MudText>
 
-                        <!-- Descripción -->
-                        <MudText Typo="Typo.body2" Class="mb-3">@drone.Description</MudText>
+                        <div class="drone-highlights">
 
-                        <!-- Precio -->
-                        <MudText Typo="Typo.subtitle2" Class="mb-3">
-                            Precio de renta: @drone.PriceSale
-                        </MudText>
+                            <!-- CÁMARA -->
+                            <div class="highlight-card main">
+                                <div class="highlight-text">
+                                    <span class="highlight-title">
+                                        <MudIcon Icon="@Icons.Material.Filled.PhotoCamera" Class="inline-icon" />
+                                        Cámara
+                                    </span>
+                                    <span class="highlight-value">
+                                        @drone.Camera
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- FEATURES SECUNDARIOS -->
+                            <div class="highlight-row">
+
+                                <div class="highlight-card mini">
+                                    <div class="highlight-text">
+                                        <span class="highlight-title">
+                                            <MudIcon Icon="@Icons.Material.Filled.BatteryChargingFull" Class="inline-icon" />
+                                            Autonomía
+                                        </span>
+                                        <span class="highlight-value">@drone.Autonomy min</span>
+                                    </div>
+                                </div>
+
+                                <div class="highlight-card mini">
+                                    <div class="highlight-text">
+                                        <span class="highlight-title">
+                                            <MudIcon Icon="@Icons.Material.Filled.SettingsInputAntenna" Class="inline-icon" />
+                                            Alcance
+                                        </span>
+                                        <span class="highlight-value">@drone.Scope km</span>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
 
                         <!-- Botones de acciones -->
                         <div class="button-row">
@@ -126,7 +160,11 @@
 
         _drones = await _context.Drones
             .Include(d => d.Images)
-            .Where(d => d.PriceRent != null) // solo drones disponibles para renta
+            .Include(d => d.Category)
+            .Where(d =>
+                d.PriceRent != null &&
+                (d.Category.Name == "Renta" || d.Category.Name == "Venta / Renta")
+            )
             .ToListAsync();
     }
 
@@ -156,7 +194,10 @@
         {
             _drones = await _context.Drones
                 .Include(d => d.Images)
-                .Where(d => d.PriceRent != null) // solo drones disponibles para renta
+                .Where(d =>
+                        d.PriceRent != null &&
+                        d.Category != null &&
+                       (d.Category.Name == "Renta" || d.Category.Name == "Venta / Renta")) // solo drones disponibles para renta
                 .ToListAsync();
 
             StateHasChanged();
@@ -191,7 +232,11 @@
 
         _drones = await _context.Drones
             .Include(d => d.Images)
-            .Where(d => d.PriceRent != null) // solo drones disponibles para renta
+            .Include(d => d.Category)
+            .Where(d =>
+                d.PriceRent != null &&
+                (d.Category.Name == "Renta" || d.Category.Name == "Venta / Renta")
+            )
             .ToListAsync();
 
         StateHasChanged();

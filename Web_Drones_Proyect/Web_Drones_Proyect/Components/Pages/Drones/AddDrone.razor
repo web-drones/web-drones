@@ -28,7 +28,8 @@
                     <MudSelect T="int"
                                Label="Categoría"
                                @bind-Value="_drone.CategoryID"
-                               Required="true"
+                               Immediate="true"
+                               Dense="true"
                                RequiredError="Seleccione una categoría"
                                Class="input-teal">
                         @foreach (var cat in _categories)
@@ -40,7 +41,8 @@
                     <MudSelect T="int"
                                Label="Tipo de Dron"
                                @bind-Value="_drone.TypeDroneID"
-                               Required="true"
+                               Immediate="true"
+                               Dense="true"
                                RequiredError="Seleccione el tipo de dron"
                                Class="input-teal">
                         @foreach (var type in _types)
@@ -68,8 +70,8 @@
                     <MudSelect T="string"
                                Label="Estado"
                                @bind-Value="_drone.State"
-                               Required="true"
-                               RequiredError="Seleccione el estado"
+                               Immediate="true"
+                               Dense="true"
                                Class="input-teal">
                         <MudSelectItem Value="@("Disponible")">Disponible</MudSelectItem>
                         <MudSelectItem Value="@("No disponible")">No disponible</MudSelectItem>
@@ -141,7 +143,7 @@
                 Cancelar
             </MudButton>
 
-            <MudButton OnClick="Save" Class="btn-save">
+            <MudButton OnClick="async () => await Save()" Class="btn-save">
                 Guardar
             </MudButton>
         </div>
@@ -252,4 +254,50 @@
     .mud-dialog-titlebar-close {
         color: var(--teal-2) !important;
     }
+
+    /* ===== FIX DROPDOWN SELECT TEXT (valor seleccionado) ===== */
+    .input-teal .mud-select-input {
+        color: white !important;
+    }
+
+    /* texto dentro del select cuando ya hay valor */
+    .input-teal .mud-input-slot {
+        color: white !important;
+    }
+
+    /* label del select */
+    .input-teal .mud-input-label {
+        color: white !important;
+    }
+
+    /* ícono del dropdown */
+    .input-teal .mud-select-icon {
+        color: var(--teal-2) !important;
+    }
+
+    .mud-popover .mud-list-item .mud-typography {
+        color: black !important;
+    }
+
+    .mud-popover .mud-list {
+        background-color: #0f1f1c !important; /* fondo oscuro */
+        border: 1px solid rgba(38, 166, 154, 0.3);
+    }
+
+    /* texto de los items */
+    .mud-popover .mud-list-item {
+        color: white !important;
+    }
+
+        /* hover más bonito */
+        .mud-popover .mud-list-item:hover {
+            background-color: #00796B !important;
+            color: white !important;
+        }
+
+        /* item seleccionado */
+        .mud-popover .mud-list-item.mud-selected-item {
+            background-color: #26A69A !important;
+            color: white !important;
+        }
 </style>

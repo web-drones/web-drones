@@ -1,0 +1,408 @@
+﻿@page "/login"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Web_Drones_Proyect.Services
+@using MudBlazor
+
+<!-- ===================== -->
+<!-- Contenedor principal de autenticación -->
+<!-- ===================== -->
+<div class="auth-bg">
+    <div class="auth-shell">
+
+        <!-- Tarjeta del formulario de login -->
+        <div class="auth-card">
+
+            <!-- Marca / Identidad del sistema -->
+            <div class="brand-row">
+                <div class="brand-badge">Aero Santo Domingo</div>
+                <div class="brand-dot" aria-hidden="true"></div>
+            </div>
+
+            <!-- Título -->
+            <MudText Typo="Typo.h4" Class="auth-title">
+                Iniciar Sesion
+            </MudText>
+
+            <!-- Subtítulo -->
+            <MudText Typo="Typo.body2" Class="auth-subtitle">
+                Inicia sesión para continuar.
+            </MudText>
+
+            <!-- ===================== -->
+            <!-- Formulario de login -->
+            <!-- ===================== -->
+            <MudForm @ref="_form"
+                     Class="auth-form"
+                     OnValidSubmit="LoginAsync">
+
+                <!-- Campo correo -->
+                <MudTextField Label="Correo Electrónico"
+                              TValue="string"
+                              Value="@_email"
+                              ValueChanged="@((string v) => _email = v)"
+                              ValueExpression="@(() => _email)"
+                              Required="true"
+                              Variant="Variant.Outlined"
+                              Class="auth-input" />
+
+                <!-- Campo contraseña con mostrar / ocultar -->
+                <MudTextField Label="Contraseña"
+                              TValue="string"
+                              InputType="@(_showPassword? InputType.Text: InputType.Password)"
+                              Value="@_password"
+                              ValueChanged="@((string v) => _password = v)"
+                              ValueExpression="@(() => _password)"
+                              Required="true"
+                              Variant="Variant.Outlined"
+                              Class="auth-input"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@(_showPassword? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                              OnAdornmentClick="TogglePasswordVisibility" />
+
+                <!-- Botón de inicio de sesión -->
+                <MudButton Class="auth-btn"
+                           OnClick="LoginAsync"
+                           FullWidth="true">
+                    Entrar
+                </MudButton>
+
+            </MudForm>
+
+            <!-- Mensaje de error si el login falla -->
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <MudAlert Severity="Severity.Error" Dense="true" Class="auth-alert">
+                    @_errorMessage
+                </MudAlert>
+            }
+
+            <!-- Enlace para registro -->
+            <div class="auth-foot">
+                <span>¿No tienes cuenta?</span>
+                <a class="auth-link" href="/register">Crear cuenta</a>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<style>
+
+    /* ===================== */
+    /* Variables de color del tema */
+    /* ===================== */
+    :root {
+        --teal-0: #E0F2F1;
+        --teal-1: #B2DFDB;
+        --teal-2: #80CBC4;
+        --teal-3: #4DB6AC;
+        --teal-4: #26A69A;
+        --teal-5: #009688;
+        --teal-d2: #00796B;
+        --teal-d3: #00695C;
+        --teal-d4: #004D40;
+        --ink: #083B33;
+        --muted: rgba(8,59,51,.72);
+        --border: rgba(0,77,64,.14);
+        --shadow: rgba(0,77,64,.18);
+    }
+
+    /* Fondo principal con gradientes */
+    .auth-bg {
+        min-height: calc(100vh - 64px);
+        padding: 3.2rem 1rem;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(900px 400px at 20% 10%, rgba(29,233,182,.22), transparent 60%), radial-gradient(700px 320px at 85% 18%, rgba(38,166,154,.18), transparent 55%), linear-gradient(180deg, var(--teal-0), #F6FFFE 55%, var(--teal-1));
+        position: relative;
+        overflow: hidden;
+    }
+
+        /* Elementos decorativos animados */
+        .auth-bg::before,
+        .auth-bg::after {
+            content: "";
+            position: absolute;
+            width: 520px;
+            height: 520px;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: .55;
+            pointer-events: none;
+            animation: floatBlob 10s ease-in-out infinite;
+        }
+
+        .auth-bg::before {
+            left: -180px;
+            top: 80px;
+            background: radial-gradient(circle, rgba(0,191,165,.35), transparent 60%);
+        }
+
+        .auth-bg::after {
+            right: -220px;
+            bottom: -80px;
+            background: radial-gradient(circle, rgba(38,166,154,.28), transparent 60%);
+            animation-delay: 1.6s;
+        }
+
+    /* Contenedor del login */
+    .auth-shell {
+        width: 100%;
+        max-width: 460px;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Tarjeta principal */
+    .auth-card {
+        border-radius: 22px;
+        padding: 2rem 2rem 1.3rem;
+        background: rgba(255,255,255,.78);
+        border: 1px solid var(--border);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 18px 55px var(--shadow), 0 1px 0 rgba(255,255,255,.9) inset;
+        transform: translateY(8px);
+        opacity: 0;
+        animation: fadeUp .7s ease forwards;
+        position: relative;
+        overflow: hidden;
+    }
+
+        /* Decoración superior */
+        .auth-card::before {
+            content: "";
+            position: absolute;
+            inset: -120px -120px auto -120px;
+            height: 220px;
+            background: radial-gradient(circle at 30% 40%, rgba(29,233,182,.22), transparent 60%);
+            pointer-events: none;
+        }
+
+    /* Encabezado de marca */
+    .brand-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: .9rem;
+    }
+
+    /* Badge de marca */
+    .brand-badge {
+        width: fit-content;
+        padding: .38rem .75rem;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(0,150,136,.14), rgba(38,166,154,.10));
+        border: 1px solid rgba(0,150,136,.20);
+        color: var(--teal-d3);
+        font-weight: 900;
+        letter-spacing: .2px;
+        animation: fadeUp .7s ease .08s forwards;
+        opacity: 0;
+    }
+
+    /* Indicador animado */
+    .brand-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #1DE9B6;
+        box-shadow: 0 0 0 7px rgba(29,233,182,.18);
+        animation: pulse 2.2s ease-in-out infinite;
+    }
+
+    /* Título */
+    .auth-title {
+        color: var(--ink);
+        font-weight: 950;
+        letter-spacing: -.2px;
+        margin: 0;
+        animation: fadeUp .7s ease .12s forwards;
+        opacity: 0;
+    }
+
+    /* Subtítulo */
+    .auth-subtitle {
+        color: var(--muted);
+        margin-top: .35rem;
+        animation: fadeUp .7s ease .18s forwards;
+        opacity: 0;
+    }
+
+    /* Formulario */
+    .auth-form {
+        margin-top: 1.25rem;
+        display: grid;
+        gap: .95rem;
+        animation: fadeUp .7s ease .24s forwards;
+        opacity: 0;
+    }
+
+    /* Estilos de inputs */
+    .auth-input .mud-input-control {
+        border-radius: 14px;
+        background: rgba(255,255,255,.75);
+    }
+
+    .auth-input .mud-input-outlined-border {
+        border-color: rgba(0,77,64,.20) !important;
+    }
+
+    .auth-input:hover .mud-input-outlined-border {
+        border-color: rgba(0,150,136,.35) !important;
+    }
+
+    /* Botón login */
+    .auth-btn {
+        margin-top: .35rem;
+        border-radius: 14px;
+        height: 46px;
+        font-weight: 950;
+        letter-spacing: .25px;
+        color: white !important;
+        background: linear-gradient(90deg, var(--teal-4), var(--teal-d2)) !important;
+        box-shadow: 0 14px 26px rgba(0,77,64,.22);
+        transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 34px rgba(0,77,64,.30);
+            filter: saturate(1.05);
+        }
+
+    .auth-alert {
+        margin-top: 1rem;
+        border-radius: 14px;
+    }
+
+    /* Footer */
+    .auth-foot {
+        margin-top: 1.15rem;
+        display: flex;
+        justify-content: center;
+        gap: .5rem;
+        color: rgba(8,59,51,.70);
+        font-weight: 700;
+    }
+
+    .auth-link {
+        color: var(--teal-d3);
+        font-weight: 950;
+        text-decoration: none;
+    }
+
+    .auth-link:hover {
+        text-decoration: underline;
+    }
+
+    /* Animación de entrada del card */
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Animación de blobs del fondo */
+    @@keyframes floatBlob {
+        0% {
+            transform: translateY(0px);
+        }
+
+        50% {
+            transform: translateY(-18px);
+        }
+
+        100% {
+            transform: translateY(0px);
+        }
+    }
+
+    /* Animación del punto verde */
+    @@keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 7px rgba(29,233,182,.18);
+        }
+
+        50% {
+            transform: scale(1.08);
+            box-shadow: 0 0 0 10px rgba(29,233,182,.14);
+        }
+    }
+
+</style>
+
+@code {
+
+    // Referencia al formulario MudBlazor
+    private MudForm _form = default!;
+
+    // Controla si la contraseña es visible
+    private bool _showPassword = false;
+
+    // Campos del formulario
+    private string _email = string.Empty;
+    private string _password = string.Empty;
+
+    // Mensaje de error mostrado al usuario
+    private string? _errorMessage;
+
+    // Servicio de autenticación
+    [Inject] private AuthService AuthService { get; set; } = default!;
+
+    // Servicio de navegación
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    // Estado de autenticación actual
+    [CascadingParameter] private Task<AuthenticationState> AuthStateTask { get; set; } = default!;
+
+    // Notificaciones tipo snackbar
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
+
+
+    // Método que ejecuta el proceso de login
+    private async Task LoginAsync()
+    {
+        // Valida el formulario
+        if (_form != null) await _form.Validate();
+
+        _errorMessage = string.Empty;
+
+        // Si el formulario no es válido, detiene el proceso
+        if (!_form.IsValid) return;
+
+        // Intenta autenticar al usuario
+        var success = await AuthService.LoginAsync(_email, _password);
+
+        if (success)
+        {
+            // Notificación de éxito
+            Snackbar.Add("Inicio de sesión exitoso ✔", Severity.Success, config =>
+            {
+                config.VisibleStateDuration = 5000;
+                config.ShowCloseIcon = true;
+            });
+
+            // Redirige a la página principal
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            // Mensaje si las credenciales son incorrectas
+            _errorMessage = "Correo o contraseña incorrectos.";
+        }
+    }
+
+    // Alterna mostrar / ocultar contraseña
+    private void TogglePasswordVisibility()
+    {
+        _showPassword = !_showPassword;
+    }
+}

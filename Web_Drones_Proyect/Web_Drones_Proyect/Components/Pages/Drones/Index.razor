@@ -1,0 +1,168 @@
+﻿@page "/"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using MudBlazor
+@using Web_Drones_Proyect.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+
+<!-- ===================== -->
+<!-- Carrusel principal -->
+<!-- ===================== -->
+<div style="width:100%; margin:0; padding:0;">
+    <MudCarousel Class="mud-width-full"
+                 Style="height:450px; margin:0; padding:0;"
+                 ShowArrows="true"
+                 ShowBullets="true"
+                 EnableSwipeGesture="true"
+                 AutoCycle="true"
+                 TData="object">
+
+        <!-- Slide 1 -->
+        <MudCarouselItem Transition="Transition.Slide">
+            <img src="ImgCarrusel/drone1.png"
+                 style="width:100%; height:100%; object-fit:cover;" />
+        </MudCarouselItem>
+
+        <MudCarouselItem Transition="Transition.Slide">
+            <img src="ImgCarrusel/drone2.png"
+                 style="width:100%; height:100%; object-fit:cover;" />
+        </MudCarouselItem>
+
+        <MudCarouselItem Transition="Transition.Slide">
+            <img src="ImgCarrusel/drone3.png"
+                 style="width:100%; height:100%; object-fit:cover;" />
+        </MudCarouselItem>
+
+    </MudCarousel>
+</div>
+
+<!-- ===================== -->
+<!-- Lista de drones -->
+<!-- ===================== -->
+<MudContainer Class="mt-10 d-flex flex-column align-items-center">
+
+    <!-- Itera todos los drones obtenidos desde la base de datos -->
+    @for (int i = 0; i < _drones.Count; i++)
+    {
+        var drone = _drones[i];
+
+        // Alterna la posición de la imagen (izquierda / derecha)
+        bool imageLeft = i % 2 == 0;
+
+        <MudPaper Class="drone-card mb-4" Elevation="2">
+
+            <div class="drone-row-card">
+
+                <!-- Imagen a la izquierda -->
+                @if (imageLeft)
+                {
+                    <MudImage Src="@(drone.Images.FirstOrDefault()?.UrlImageDron ?? "/images/no-image.png")"
+                              Alt="@drone.Name"
+                              Class="drone-image" />
+                }
+
+                <!-- Información del dron -->
+                <div class="drone-info @(imageLeft ? "drone-info-right" : "drone-info-left")">
+
+                    <div class="drone-info-content">
+
+                        <!-- Nombre -->
+                        <MudText Typo="Typo.h5" Class="mb-3">@drone.Name</MudText>
+                        <div class="drone-highlights">
+
+                            <!-- CÁMARA -->
+                            <div class="highlight-card main">
+                                <div class="highlight-text">
+                                    <span class="highlight-title">
+                                        <MudIcon Icon="@Icons.Material.Filled.PhotoCamera" Class="inline-icon" />
+                                        Cámara
+                                    </span>
+                                    <span class="highlight-value">
+                                        @drone.Camera
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- FEATURES SECUNDARIOS -->
+                            <div class="highlight-row">
+
+                                <div class="highlight-card mini">
+                                    <div class="highlight-text">
+                                        <span class="highlight-title">
+                                            <MudIcon Icon="@Icons.Material.Filled.BatteryChargingFull" Class="inline-icon" />
+                                            Autonomía
+                                        </span>
+                                        <span class="highlight-value">@drone.Autonomy min</span>
+                                    </div>
+                                </div>
+
+                                <div class="highlight-card mini">
+                                    <div class="highlight-text">
+                                        <span class="highlight-title">
+                                            <MudIcon Icon="@Icons.Material.Filled.SettingsInputAntenna" Class="inline-icon" />
+                                            Alcance
+                                        </span>
+                                        <span class="highlight-value">@drone.Scope km</span>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Botones de acciones -->
+                        <div class="button-row">
+
+                            <AuthorizeView Roles="ADMIN,CLIENTE">
+                                <MudButton Class="drone-btn btn-add"
+                                           StartIcon="@Icons.Material.Filled.AddShoppingCart"
+                                           OnClick="@(() => AddToCartAsync(drone))">
+                                    Añadir
+                                </MudButton>
+                            </AuthorizeView>
+
+                            <MudButton Class="drone-btn btn-view"
+                                       StartIcon="@Icons.Material.Filled.Visibility"
+                                       OnClick="@(() => Nav.NavigateTo($"/drones/details/{drone.DronID}"))">
+                                Ver
+                            </MudButton>
+
+                            <AuthorizeView Roles="ADMIN">
+                                <Authorized>
+
+                                    <MudButton Class="drone-btn btn-edit"
+                                               StartIcon="@Icons.Material.Filled.Edit"
+                                               OnClick="@(() => EditDroneAsync(drone))">
+                                        Editar
+                                    </MudButton>
+
+                                    <MudButton Class="drone-btn btn-delete"
+                                               StartIcon="@Icons.Material.Filled.Delete"
+                                               OnClick="@(() => DeleteDroneAsync(drone.DronID))">
+                                        Borrar
+                                    </MudButton>
+
+                                </Authorized>
+                            </AuthorizeView>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Imagen a la derecha -->
+                @if (!imageLeft)
+                {
+                    <MudImage Src="@(drone.Images.FirstOrDefault()?.UrlImageDron ?? "/images/no-image.png")"
+                              Alt="@drone.Name"
+                              Class="drone-image" />
+                }
+
+            </div>
+
+        </MudPaper>
+    }
+
+</MudContainer>

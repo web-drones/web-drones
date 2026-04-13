@@ -1,0 +1,478 @@
+﻿@page "/drones/details/{Id:int}"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using MudBlazor
+@using Web_Drones_Proyect.Enums
+@using Web_Drones_Proyect.Models
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-10 mb-12">
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate Size="Size.Large" Class="mx-auto d-block mt-10" />
+    }
+    else if (_drone == null)
+    {
+        <MudAlert Severity="Severity.Error">Dron no encontrado</MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="details-card pa-6" Elevation="6">
+
+            <MudGrid Spacing="4">
+
+                <!-- IMAGEN -->
+                <MudItem xs="12" md="6">
+
+                    <!-- IMAGEN -->
+                    <div class="image-box">
+                        <MudImage Src="@_selectedImage"
+                                  Alt="@_drone.Name"
+                                  Class="main-image" />
+                    </div>
+
+                    <!-- DESCRIPCIÓN (debajo de la foto) -->
+                    <div class="description-card mt-4">
+
+                        <MudText Typo="Typo.subtitle1" Class="mb-2 description-title">
+                            📝 <span class="desc-title-text">Descripción</span>
+                        </MudText>
+
+                        <MudText Class="@DescriptionClass">
+                            @_drone.Description
+                        </MudText>
+
+                        <MudButton Variant="Variant.Text"
+                                   Class="toggle-desc-btn"
+                                   Color="Color.Primary"
+                                   OnClick="ToggleDescription"
+                                   @key="_showMore">
+                            @(_showMore ? "Ver menos" : "Ver más")
+                        </MudButton>
+                    </div>
+
+                </MudItem>
+
+                <!-- INFO -->
+                <MudItem xs="12" md="6">
+
+                    <MudText Typo="Typo.h4" Class="drone-title">
+                        @_drone.Name
+                    </MudText>
+
+                    <!-- ESTADO -->
+                    <div class="state-row">
+                        <span class="state-dot @(_drone.State == "Disponible" ? "ok" : "bad")"></span>
+                        <MudText Typo="Typo.subtitle2">@_drone.State</MudText>
+                    </div>
+
+                    <!-- SPECS -->
+                    <div class="specs-grid">
+
+                        <div class="spec-card">
+                            <span class="spec-icon">📷</span>
+                            <b>Cámara</b>
+                            <span>@_drone.Camera</span>
+                        </div>
+                        <div class="spec-card">
+                            <span class="spec-icon">📦</span>
+                            <b>Categoría</b>
+                            <span>
+                                @if (_drone.Category != null)
+                                {
+                                    @_drone.Category.Name
+                                }
+                                else
+                                {
+                                    <span>Sin categoría</span>
+                                }
+                            </span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="spec-icon">🔋</span>
+                             <b>Autonomía</b>
+                            <span>@_drone.Autonomy min</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="spec-icon">⚡</span>
+                             <b>Baterías</b>
+                            <span>Intercambiables</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="spec-icon">📡</span>
+                             <b>Alcance</b>
+                            <span>@_drone.Scope km</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="spec-icon">🛰️</span>
+                             <b>GPS</b>
+                            <span>Alta precisión</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="spec-icon">🌬️</span>
+                             <b>Resistencia</b>
+                            <span>Viento nivel 5</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="spec-icon">📦</span>
+                             <b>Stock</b>
+                            <span>@_drone.Stock unidades</span>
+                        </div>
+
+                    </div>
+
+                    <!-- PRECIOS -->
+
+                    <div class="price-box">
+
+                        @if (_drone.PriceSale.HasValue && _drone.PriceSale > 0)
+                        {
+                            <div class="price sale">
+                                💰 Venta: @_drone.PriceSale.Value.ToString("C")
+                            </div>
+                        }
+
+                        @if (_drone.PriceRent.HasValue && _drone.PriceRent > 0)
+                        {
+                            <div class="price rent">
+                                🗓️ Renta: @_drone.PriceRent.Value.ToString("C") / día
+                            </div>
+                        }
+
+                    </div>
+
+                    <!-- BOTÓN -->
+                    <AuthorizeView Roles="ADMIN,CLIENTE">
+                        <MudButton FullWidth
+                                   Class="add-cart-btn mt-4"
+                                   StartIcon="@Icons.Material.Filled.ShoppingCart"
+                                   OnClick="AddToCartAsync">
+                            Añadir al carrito
+                        </MudButton>
+                    </AuthorizeView>
+
+                </MudItem>
+
+            </MudGrid>
+
+        </MudPaper>
+    }
+
+</MudContainer>
+
+<style>
+    /* ---------- CONTENEDOR PRINCIPAL ---------- */
+    .details-card {
+        border-radius: 24px;
+        background: linear-gradient(145deg,#ffffff,#eef2f3);
+        box-shadow: 0 20px 40px rgba(0,0,0,.08);
+        animation: fadeInUp .6s ease;
+    }
+
+    /* ---------- IMAGEN ---------- */
+    .image-box {
+        overflow: hidden;
+        border-radius: 22px;
+        position: relative;
+    }
+
+    .main-image {
+        width: 100%;
+        height: 420px;
+        object-fit: cover;
+        transition: transform .6s ease;
+    }
+
+    .image-box::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,.35), transparent 50%);
+    }
+
+    .main-image:hover {
+        transform: scale(1.08);
+    }
+
+    /* ---------- TITULO ---------- */
+    .drone-title {
+        font-weight: 900;
+        letter-spacing: .4px;
+        background: linear-gradient(90deg,#004D40,#26A69A);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* ---------- ESTADO ---------- */
+    .state-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 12px 0 22px;
+    }
+
+    .state-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        animation: pulse 1.8s infinite;
+    }
+
+        .state-dot.ok {
+            background: #2ecc71;
+        }
+
+        .state-dot.bad {
+            background: #e74c3c;
+        }
+
+    /* ---------- DESCRIPCIÓN ---------- */
+    .description-card {
+        margin-top: 24px;
+        padding: 18px;
+        border-radius: 18px;
+        background: linear-gradient(145deg, rgba(255,255,255,.9), rgba(248,249,250,.7));
+        backdrop-filter: blur(10px);
+        box-shadow: 0 12px 30px rgba(0,0,0,.08);
+        border: 1px solid rgba(38,166,154,.15);
+        transition: transform .4s ease, box-shadow .4s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .description-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 18px 40px rgba(0,0,0,.12);
+        }
+
+    /* TÍTULO DE DESCRIPCIÓN */
+    .description-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #222;
+        font-weight: 600;
+    }
+
+        .description-title .desc-title-text {
+            font-weight: 800;
+            letter-spacing: .3px;
+            background: linear-gradient(90deg,#004D40,#26A69A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+    /* TEXTO DESCRIPCIÓN */
+    .description-text {
+        transition: max-height .5s ease, opacity .4s ease;
+        line-height: 1.6;
+        color: #444;
+    }
+
+        .description-text.closed {
+            max-height: 160px;
+            overflow: hidden;
+            position: relative;
+        }
+
+            .description-text.closed::after {
+                content: "";
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 90px;
+                background: linear-gradient( to top, rgba(248,249,250,1) 10%, rgba(248,249,250,.7) 40%, rgba(248,249,250,0) );
+                pointer-events: none;
+            }
+
+        .description-text.open {
+            max-height: 1000px;
+        }
+
+    /* ---------- GRID DE SPECS ---------- */
+    .specs-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    /* ---------- TARJETAS SPECS ---------- */
+    .spec-card {
+        position: relative;
+        background: linear-gradient(145deg,#ffffff,#f1f3f4);
+        padding: 16px;
+        border-radius: 16px;
+        box-shadow: 0 10px 22px rgba(0,0,0,.08);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        transition: transform .35s ease, box-shadow .35s ease;
+        overflow: hidden;
+    }
+
+        .spec-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg,transparent,rgba(38,166,154,.18),transparent);
+            opacity: 0;
+            transition: opacity .4s ease;
+        }
+
+        .spec-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 34px rgba(0,0,0,.14);
+        }
+
+            .spec-card:hover::before {
+                opacity: 1;
+            }
+
+    /* ICONO */
+    .spec-icon {
+        font-size: 1.4rem;
+        transition: transform .4s ease;
+        display: inline-block;
+        line-height: 1;
+    }
+
+    .spec-card:hover .spec-icon {
+        transform: scale(1.12) rotate(-3deg);
+    }
+
+    /* TEXTO SPECS */
+    .spec-card b {
+        font-size: .95rem;
+        color: #222;
+    }
+
+    .spec-card span {
+        font-size: .9rem;
+        color: #555;
+    }
+
+    /* ---------- PRECIOS ---------- */
+    .price-box {
+        margin-top: 22px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .price {
+        padding: 12px 16px;
+        border-radius: 14px;
+        font-weight: 800;
+        width: fit-content;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 8px 18px rgba(0,0,0,.08);
+    }
+
+        .price.sale {
+            background: linear-gradient(90deg,#004D40,#26A69A);
+            color: white;
+        }
+
+        .price.rent {
+            background: linear-gradient(90deg,#4DB6AC,#80CBC4);
+            color: #00332d;
+        }
+
+    /* ---------- BOTÓN ---------- */
+    .add-cart-btn {
+        height: 56px;
+        border-radius: 16px;
+        background: linear-gradient(90deg,#004D40,#26A69A);
+        color: white;
+        font-weight: 700;
+        letter-spacing: .4px;
+        box-shadow: 0 10px 22px rgba(0,77,64,.4);
+        transition: transform .35s ease, box-shadow .35s ease;
+    }
+
+        .add-cart-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 36px rgba(0,77,64,.55);
+        }
+
+    .toggle-desc-btn {
+        margin-top: 10px;
+        font-weight: 800;
+        letter-spacing: .3px;
+        text-transform: none;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: linear-gradient(90deg, rgba(0,77,64,.08), rgba(38,166,154,.08));
+        color: #004D40;
+        border: 1px solid rgba(38,166,154,.25);
+        box-shadow: 0 6px 16px rgba(0,0,0,.06);
+        transition: all .35s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .toggle-desc-btn:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(90deg,#004D40,#26A69A);
+            color: white;
+            box-shadow: 0 12px 28px rgba(0,77,64,.35);
+        }
+
+        .toggle-desc-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient( 120deg, transparent, rgba(255,255,255,.4), transparent );
+            transition: all .6s ease;
+        }
+
+        .toggle-desc-btn:hover::before {
+            left: 100%;
+        }
+
+    /* ---------- ANIMACIONES ---------- */
+    @@keyframes fadeInUp {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    @@keyframes pulse {
+        0%
+
+    {
+        box-shadow: 0 0 0 0 rgba(46,204,113,.6);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(46,204,113,0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(46,204,113,0);
+    }
+
+    }
+</style>

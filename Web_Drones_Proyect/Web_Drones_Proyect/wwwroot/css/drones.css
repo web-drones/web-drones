@@ -1,0 +1,512 @@
+﻿/* ===================================================== */
+/* DRONE CARDS – ESTILOS GLOBALES WEBDRONES */
+/* ===================================================== */
+
+
+/* ===================================================== */
+/* DRONE CARD – INDEX */
+/* ===================================================== */
+
+.drone-card {
+    width: 80%;
+    border-radius: 18px;
+    overflow: hidden;
+    background: radial-gradient(circle at top left, rgba(77,182,172,0.15), transparent 40%), linear-gradient(135deg, #ffffff, #f4fafa);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.6);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+    .drone-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 36px rgba(0,0,0,0.18);
+    }
+
+
+/* ===================================================== */
+/* LAYOUT HORIZONTAL */
+/* ===================================================== */
+
+.drone-row-card {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    height: 400px;
+    background: linear-gradient(90deg, #004D40, #4DB6AC);
+}
+
+
+/* ===================================================== */
+/* IMAGEN */
+/* ===================================================== */
+
+.drone-image {
+    width: 50%;
+    height: 100%;
+    flex: 0 0 50%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+    .drone-image:hover {
+        transform: scale(1.05);
+    }
+
+
+/* ===================================================== */
+/* INFORMACIÓN */
+/* ===================================================== */
+
+.drone-info {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 50%;
+    flex-direction: column;
+    padding: 22px 28px;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(235,247,245,0.92));
+}
+
+.drone-info-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+    padding-top: 12px;
+    padding-bottom: 8px;
+}
+
+.drone-specs,
+.drone-highlights {
+    margin-top: 20px;
+    margin-bottom: 22px;
+}
+
+
+/* ===================================================== */
+/* TÍTULO */
+/* ===================================================== */
+
+.drone-info h5 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #333333;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+    .drone-info h5::after {
+        content: "";
+        display: block;
+        width: 100%;
+        height: 3px;
+        margin-top: 10px;
+        background: linear-gradient(90deg, #4DB6AC, #009688);
+        border-radius: 2px;
+        padding-left: 40px;
+        box-sizing: border-box;
+    }
+
+
+/* ===================================================== */
+/* TEXTO */
+/* ===================================================== */
+
+.drone-info p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #555555;
+    margin-bottom: 10px;
+}
+
+.drone-info .subtitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #4DB6AC;
+    margin-bottom: 20px;
+}
+
+
+/* ===================================================== */
+/* BOTONES */
+/* ===================================================== */
+
+.button-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    margin-top: auto;
+}
+
+.drone-btn {
+    min-width: 90px;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+}
+
+    .drone-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+
+    .drone-btn:active {
+        transform: scale(0.97);
+    }
+
+    .drone-btn .mud-icon-root {
+        font-size: 16px;
+        margin-right: 4px;
+    }
+
+
+/* ===================================================== */
+/* FEATURES / PRECIOS */
+/* ===================================================== */
+
+.drone-features {
+    margin-top: 6px;
+}
+
+.feature-item {
+    font-size: 0.95rem;
+    color: #444;
+    margin-bottom: 4px;
+}
+
+.price-item {
+    margin-top: 6px;
+    font-weight: 600;
+    color: #004D40;
+}
+
+
+/* ===================================================== */
+/* DRONE SPECS – INDEX CLEAN UI */
+/* ===================================================== */
+
+.drone-specs {
+    margin-top: 3px;
+    margin-bottom: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.spec-row {
+    display: flex;
+    gap: 24px;
+}
+
+.spec-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 10px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.75);
+}
+
+    .spec-item.small {
+        flex: 1;
+        padding: 8px 10px;
+    }
+
+.spec-icon {
+    font-size: 1.2rem;
+    line-height: 1.2;
+    margin-top: 2px;
+}
+
+.spec-item:not(.small) {
+    margin-bottom: 6px;
+}
+
+.spec-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.spec-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #009688;
+}
+
+.spec-value {
+    font-size: 0.85rem;
+    color: #444;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+
+/* ===================================================== */
+/* DRONE HIGHLIGHTS – PREMIUM UI */
+/* ===================================================== */
+
+.highlights-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    max-height: 140px;
+    overflow: hidden;
+}
+
+.highlight-row {
+    display: flex;
+    gap: 18px;
+}
+
+.highlight-card {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    min-height: 60px;
+    box-shadow: rgba(0, 0, 0, 0.08) 0px 6px 16px;
+    position: relative;
+    padding: 12px 14px;
+    border-radius: 16px;
+    transition: transform 0.25s, box-shadow 0.25s;
+    overflow: hidden;
+}
+
+    .highlight-card::after {
+        content: "";
+        position: absolute;
+        right: -30px;
+        top: -30px;
+        width: 80px;
+        height: 80px;
+        background: radial-gradient(circle, rgba(0,150,136,0.12), transparent 70%);
+    }
+
+    .highlight-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 24px rgba(0,0,0,0.14);
+    }
+
+    .highlight-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top left, rgba(77,182,172,0.25), transparent 60%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .highlight-card:hover::before {
+        opacity: 1;
+    }
+
+    .highlight-card.main {
+        background: linear-gradient(135deg, #e0f2f1, #f1fbfa);
+    }
+
+    .highlight-card.mini {
+        flex: 1;
+        min-height: 70px;
+    }
+
+.highlight-icon {
+    font-size: 34px;
+    color: #009688;
+}
+
+.main-icon {
+    font-size: 42px;
+}
+
+.highlight-text {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.highlight-title {
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: #00796B;
+}
+
+.highlight-value {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.85rem;
+}
+
+.inline-icon {
+    font-size: 16px;
+    margin-right: 6px;
+    vertical-align: middle;
+    color: #009688;
+}
+
+.drone-specs > .spec-item:first-child {
+    margin-bottom: 18px;
+}
+
+.highlight-value {
+    margin-top: 2px;
+}
+
+
+/* ===================================================== */
+/* COLORES FLOW WEBDRONES */
+/* ===================================================== */
+
+.btn-add {
+    background: linear-gradient(135deg, #009688, #00796B);
+    color: #ffffff;
+}
+
+.btn-view {
+    background: linear-gradient(135deg, #4DB6AC, #26A69A);
+    color: #ffffff;
+}
+
+.btn-edit {
+    background: linear-gradient(135deg, #1f2933, #000000);
+    color: #ffffff;
+}
+
+.btn-delete {
+    background: linear-gradient(135deg, #c62828, #8e0000);
+    color: #ffffff;
+}
+
+    .btn-add:hover,
+    .btn-view:hover,
+    .btn-edit:hover,
+    .btn-delete:hover {
+        filter: brightness(1.08);
+    }
+
+
+/* ===================================================== */
+/* TÍTULO PRINCIPAL RENTA / VENTA */
+/* ===================================================== */
+
+.renta-title {
+    font-size: 2.6rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #004D40;
+    position: relative;
+    padding-bottom: 12px;
+}
+
+    .renta-title::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: 477px;
+        height: 4px;
+        background: linear-gradient(90deg, #004D40, #4DB6AC);
+        transform: translateX(-50%);
+        border-radius: 2px;
+    }
+
+
+/* ===== TÍTULO PRINCIPAL RENTA ===== */
+.renta-title {
+    font-size: 2.6rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #004D40;
+    position: relative;
+    padding-bottom: 12px;
+}
+
+    /* Línea decorativa */
+    .renta-title::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: 477px;
+        height: 4px;
+        background: linear-gradient(90deg, #004D40, #4DB6AC);
+        transform: translateX(-50%);
+        border-radius: 2px;
+    }
+
+/* ===================================================== */
+/* RESPONSIVE */
+/* ===================================================== */
+
+@media (max-width: 768px) {
+
+    .drone-row-card {
+        flex-direction: column;
+        height: auto;
+        background: linear-gradient(90deg, #004D40, #4DB6AC);
+    }
+
+    .drone-image {
+        width: 100%;
+        height: 250px;
+    }
+
+    .drone-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 24px 28px;
+        height: 100%;
+    }
+
+        .drone-info::after {
+            content: "";
+            flex-grow: 1;
+        }
+
+    .drone-info-content {
+        justify-content: flex-start;
+        padding: 15px 0;
+    }
+
+    .drone-info h5 {
+        font-size: 1.5rem;
+    }
+
+    .drone-info p {
+        font-size: 1rem;
+    }
+
+    .drone-info .subtitle {
+        font-size: 0.95rem;
+    }
+}

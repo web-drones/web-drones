@@ -1,0 +1,202 @@
+﻿@using MudBlazor
+@using Web_Drones_Proyect.Models
+@inject NavigationManager Nav
+
+<!-- Diálogo modal para confirmar el pedido -->
+<MudDialog>
+
+    <DialogContent>
+
+        <!-- Título del modal -->
+        <MudText Typo="Typo.h5" Class="mb-2">
+            🧾 Confirmar pedido
+        </MudText>
+
+        <!-- Separador visual -->
+        <MudDivider Class="mb-3" />
+
+        <!-- Listado de artículos del carrito -->
+        @foreach (var item in Items)
+        {
+            <MudPaper Elevation="1" Class="pa-3 mb-3">
+
+                <!-- Nombre del dron -->
+                <MudText Typo="Typo.subtitle1" Class="fw-bold mb-1">
+                    🛸 @item.Drone.Name
+                </MudText>
+
+                <!-- Tipo -->
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    Tipo: @(item.IsRent ? "Renta" : "Venta")
+                </MudText>
+
+                <MudGrid Class="mt-2">
+
+                    <!-- Cantidad -->
+                    <MudItem xs="6" sm="4">
+                        <MudText Typo="Typo.body2">Cantidad</MudText>
+                        <MudText Typo="Typo.body1">@item.Quantity</MudText>
+                    </MudItem>
+
+                    @if (!item.IsRent)
+                    {
+                        <!-- Precio unitario -->
+                        <MudItem xs="6" sm="4">
+                            <MudText Typo="Typo.body2">Precio unitario</MudText>
+                            <MudText Typo="Typo.body1">@item.UnitPrice.ToString("C")</MudText>
+                        </MudItem>
+
+                        <!-- Subtotal -->
+                        <MudItem xs="12" sm="4">
+                            <MudText Typo="Typo.body2">Subtotal</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Primary">
+                                @item.SubTotal.ToString("C")
+                            </MudText>
+                        </MudItem>
+                    }
+                    else
+                    {
+                        <!-- Fechas de renta -->
+                        <MudItem xs="6" sm="4">
+                            <MudText Typo="Typo.body2">Desde</MudText>
+                            <MudText Typo="Typo.body1">
+                                @item.RentStartDate?.ToString("dd/MM/yyyy")
+                            </MudText>
+                        </MudItem>
+
+                        <MudItem xs="6" sm="4">
+                            <MudText Typo="Typo.body2">Hasta</MudText>
+                            <MudText Typo="Typo.body1">
+                                @item.RentEndDate?.ToString("dd/MM/yyyy")
+                            </MudText>
+                        </MudItem>
+
+                        <!-- Días -->
+                        <MudItem xs="6" sm="4">
+                            <MudText Typo="Typo.body2">Días</MudText>
+                            <MudText Typo="Typo.body1">@item.RentDays</MudText>
+                        </MudItem>
+
+                        <!-- Precio por día -->
+                        <MudItem xs="6" sm="4">
+                            <MudText Typo="Typo.body2">Precio por día</MudText>
+                            <MudText Typo="Typo.body1">
+                                @item.RentPricePerDay?.ToString("C")
+                            </MudText>
+                        </MudItem>
+
+                        <!-- Total renta -->
+                        <MudItem xs="12" sm="4">
+                            <MudText Typo="Typo.body2">Subtotal renta</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Primary">
+                                @item.RentTotal.ToString("C")
+                            </MudText>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudPaper>
+        }
+
+        <!-- Separador antes del total -->
+        <MudDivider Class="my-3" />
+
+        <!-- Total del pedido -->
+        <MudText Typo="Typo.h6" Align="Align.Right">
+            💰 Total: <b>@Total.ToString("C")</b>
+        </MudText>
+
+    </DialogContent>
+
+    <!-- Acciones del modal -->
+    <DialogActions>
+
+        <!-- Botón para cancelar y cerrar el modal -->
+        <MudButton Variant="Variant.Text" OnClick="Cancel">
+            Cancelar
+        </MudButton>
+
+        <!-- Botón para enviar el pedido por WhatsApp -->
+        <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="SendWhatsApp">
+            Enviar por WhatsApp
+        </MudButton>
+
+    </DialogActions>
+
+</MudDialog>
+
+@code {
+
+    // Instancia del diálogo para controlarlo (cerrar, cancelar, etc.)
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    // Lista de productos del carrito
+    [Parameter] public List<CartItem> Items { get; set; } = new();
+
+    // Total del pedido
+    [Parameter] public decimal Total { get; set; }
+
+    [Parameter] public string ClientName { get; set; } = "";
+    [Parameter] public string ClientEmail { get; set; } = "";
+    [Parameter] public UserEntity Cliente { get; set; } = new();
+
+    // Cierra el modal sin realizar acción
+    private void Cancel() => MudDialog.Cancel();
+
+    // Construye y envía el mensaje de WhatsApp con el pedido
+    private void SendWhatsApp()
+    {
+        var sb = new System.Text.StringBuilder();
+        var now = DateTime.Now;
+
+        sb.AppendLine("🧾 *Pedido – Web Drones*");
+        sb.AppendLine("━━━━━━━━━━━━━━━━━━");
+        sb.AppendLine($"👤 *Cliente:* {Cliente.UserName}");
+        sb.AppendLine($"📧 *Correo:* {Cliente.Email}");
+        sb.AppendLine($"📅 *Fecha:* {now:dd/MM/yyyy} – {now:hh:mm tt}");
+        sb.AppendLine();
+        sb.AppendLine("🛒 *Detalle del pedido:*");
+        sb.AppendLine();
+
+        foreach (var i in Items)
+        {
+            sb.AppendLine("────────────────────────");
+            sb.AppendLine($"🛸 *{i.Drone.Name}*");
+            
+
+            if (!i.IsRent)
+            {
+                sb.AppendLine("• Tipo: Venta");
+                sb.AppendLine($"• Cantidad: {i.Quantity}");
+                sb.AppendLine($"• Precio unitario: {i.UnitPrice:C}");
+                sb.AppendLine($"• Subtotal: {i.SubTotal:C}");
+            }
+            else
+            {
+                sb.AppendLine("• Tipo: Renta");
+                sb.AppendLine($"• Cantidad: {i.Quantity}");
+                sb.AppendLine($"• Desde: {i.RentStartDate:dd/MM/yyyy}");
+                sb.AppendLine($"• Hasta: {i.RentEndDate:dd/MM/yyyy}");
+                sb.AppendLine($"• Días: {i.RentDays}");
+                sb.AppendLine($"• Precio por día: {i.RentPricePerDay:C}");
+                sb.AppendLine($"• Subtotal renta: {i.RentTotal:C}");
+            }
+
+            sb.AppendLine();
+        }
+
+        sb.AppendLine("━━━━━━━━━━━━━━━━━━");
+        sb.AppendLine($"💰 *TOTAL A PAGAR:* {Total:C}");
+        sb.AppendLine();
+        sb.AppendLine("Quedo atento para confirmar disponibilidad y proceder con el pedido ✅");
+        sb.AppendLine("Gracias por confiar en *Web Drones* 🚀");
+        sb.AppendLine();
+        sb.AppendLine("⚠️ *Este pedido entra en validez únicamente cuando uno de nuestros agentes confirme la disponibilidad y aprobación del mismo.*");
+
+        var message = Uri.EscapeDataString(sb.ToString());
+        var phone = "18094610014";
+        var url = $"https://wa.me/{phone}?text={message}";
+
+        Nav.NavigateTo(url, true);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

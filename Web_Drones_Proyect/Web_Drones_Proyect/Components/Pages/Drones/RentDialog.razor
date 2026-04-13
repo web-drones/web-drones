@@ -1,0 +1,109 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using MudBlazor
+@using Web_Drones_Proyect.Models
+@using Web_Drones_Proyect.Services
+@inject CartService CartService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ISnackbar Snackbar
+@inject NavigationManager Nav
+
+<MudDialog>
+    <DialogContent>
+
+        <MudText Typo="Typo.h6">🛸 Rentar @Item.Drone.Name</MudText>
+        <MudDivider Class="my-2" />
+
+        <MudDatePicker Label="Fecha inicio" @bind-Date="StartDate" />
+        <MudDatePicker Label="Fecha fin" @bind-Date="EndDate" />
+
+        <MudNumericField Label="Cantidad"
+                         Min="1"
+                         @bind-Value="Quantity" />
+
+        <MudText Class="mt-2">
+            💰 Precio por día: @Item.Drone.PriceRent!.Value.ToString("C")
+        </MudText>
+
+        <MudText>
+            📆 Días: @RentDays
+        </MudText>
+
+        <MudText Typo="Typo.h6" Color="Color.Primary">
+            Total: @RentTotal.ToString("C")
+        </MudText>
+
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Success" OnClick="ConfirmRent">
+            Confirmar renta
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public CartItem Item { get; set; } = null!;
+    [Parameter] public DateTime? StartDate { get; set; }
+    [Parameter] public DateTime? EndDate { get; set; }
+    [Parameter] public int Quantity { get; set; }
+
+    private int RentDays =>
+        (StartDate.HasValue && EndDate.HasValue)
+            ? (EndDate.Value.Date - StartDate.Value.Date).Days + 1
+            : 0;
+
+    private decimal RentTotal =>
+        RentDays * Item.Drone.PriceRent!.Value * Quantity;
+
+    private async Task ConfirmRent()
+    {
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+
+        if (!user.Identity!.IsAuthenticated)
+        {
+            Snackbar.Add("Debe iniciar sesión para rentar", Severity.Warning);
+            return;
+        }
+
+        var userName = user.Identity.Name ?? "Cliente";
+        var email = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
+
+        var sb = new System.Text.StringBuilder();
+        var now = DateTime.Now;
+
+        sb.AppendLine("🛸 *Solicitud de Renta – Web Drones*");
+        sb.AppendLine("━━━━━━━━━━━━━━━━━━");
+        sb.AppendLine($"👤 *Cliente:* {userName}");
+        sb.AppendLine($"📧 *Correo:* {email}");
+        sb.AppendLine($"📅 *Fecha:* {now:dd/MM/yyyy} – {now:hh:mm tt}");
+        sb.AppendLine();
+        sb.AppendLine("📦 *Detalle de la renta:*");
+        sb.AppendLine("────────────────────────");
+        sb.AppendLine($"🛸 *{Item.Drone.Name}*");
+        sb.AppendLine($"• Cantidad: {Quantity}");
+        sb.AppendLine($"• Desde: {StartDate:dd/MM/yyyy}");
+        sb.AppendLine($"• Hasta: {EndDate:dd/MM/yyyy}");
+        sb.AppendLine($"• Días: {RentDays}");
+        sb.AppendLine($"• Precio por día: {Item.Drone.PriceRent!.Value:C}");
+        sb.AppendLine($"• Total renta: {RentTotal:C}");
+        sb.AppendLine();
+        sb.AppendLine("Quedo atento para confirmar disponibilidad ✅");
+        sb.AppendLine("Gracias por confiar en *Web Drones* 🚀");
+        sb.AppendLine();
+        sb.AppendLine("⚠️ *La renta queda sujeta a confirmación por nuestro equipo.*");
+
+        var message = Uri.EscapeDataString(sb.ToString());
+        var phone = "18496517787";
+        var url = $"https://wa.me/{phone}?text={message}";
+
+        Nav.NavigateTo(url, true);
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

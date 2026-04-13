@@ -10,6 +10,10 @@ namespace Web_Drones_Proyect.Data
         {
         }
 
+        // =====================
+        // DbSets existentes
+        // =====================
+
         public DbSet<Role> Roles { get; set; }
         public DbSet<Category> Categorias { get; set; }
         public DbSet<Drone> Drones { get; set; }
@@ -22,9 +26,21 @@ namespace Web_Drones_Proyect.Data
         public DbSet<ImagesDrones> DronImagenes { get; set; }
         public DbSet<ServiceRequest> SolicitudesServicio { get; set; }
 
+        // =====================
+        // NUEVO: Carrito persistente
+        // =====================
+
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
+            // =====================
             // Tablas
+            // =====================
+
             modelBuilder.Entity<TypeDrones>().ToTable("TiposDron");
             modelBuilder.Entity<Category>().ToTable("Categorias");
             modelBuilder.Entity<User>().ToTable("Usuarios");
@@ -34,7 +50,13 @@ namespace Web_Drones_Proyect.Data
             modelBuilder.Entity<Service>().ToTable("Servicios");
             modelBuilder.Entity<ServiceRequest>().ToTable("SolicitudesServicio");
 
+            modelBuilder.Entity<Cart>().ToTable("Cart");
+            modelBuilder.Entity<CartItem>().ToTable("CartItem");
+
+            // =====================
             // Relaciones Drone
+            // =====================
+
             modelBuilder.Entity<Drone>()
                 .HasOne(d => d.TypeDrone)
                 .WithMany()
@@ -47,7 +69,10 @@ namespace Web_Drones_Proyect.Data
                 .HasForeignKey(d => d.CategoryID)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // =====================
             // Relaciones DetailsSale
+            // =====================
+
             modelBuilder.Entity<DetailsSale>()
                 .HasOne(ds => ds.Sale)
                 .WithMany(s => s.DetailsSales)
@@ -60,7 +85,10 @@ namespace Web_Drones_Proyect.Data
                 .HasForeignKey(ds => ds.DronID)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // =====================
             // Relaciones DronRent
+            // =====================
+
             modelBuilder.Entity<DronRent>()
                 .HasOne(dr => dr.User)
                 .WithMany()
@@ -73,14 +101,20 @@ namespace Web_Drones_Proyect.Data
                 .HasForeignKey(dr => dr.DronID)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // =====================
             // Relaciones ImagesDrones
+            // =====================
+
             modelBuilder.Entity<ImagesDrones>()
                 .HasOne(img => img.Drone)
                 .WithMany(d => d.Images)
                 .HasForeignKey(img => img.DronID)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // =====================
             // Relaciones ServiceRequest
+            // =====================
+
             modelBuilder.Entity<ServiceRequest>()
                 .HasOne(sr => sr.User)
                 .WithMany()
@@ -92,6 +126,26 @@ namespace Web_Drones_Proyect.Data
                 .WithMany()
                 .HasForeignKey(sr => sr.ServiceID)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // =====================
+            // Enums (opcional pero recomendado)
+            // =====================
+
+            modelBuilder.Entity<Cart>()
+                .Property(c => c.Status)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<CartItem>()
+                .Property(ci => ci.Status)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<CartItem>()
+                .Property(ci => ci.AvailabilityMode)
+                .HasConversion<int>();
+
+            modelBuilder.Entity<Drone>()
+                .Property(d => d.Availability)
+                .HasConversion<int>();
         }
     }
 }

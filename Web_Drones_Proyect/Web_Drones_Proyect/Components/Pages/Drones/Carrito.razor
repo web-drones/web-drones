@@ -1,0 +1,387 @@
+﻿@page "/carrito"
+@using MudBlazor
+@using Web_Drones_Proyect.Enums
+@using Web_Drones_Proyect.Helpers
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<div class="cart-wrap">
+
+    <div class="cart-summary">
+        <div>
+            <h2>🛒 Mi carrito</h2>
+            <div class="summary-meta">
+                @* Muestra la cantidad total de ítems distintos en el carrito *@
+                <span>Total productos: @TotalProductos</span>
+                @* Muestra cuántos productos ha marcado el usuario con el checkbox *@
+                <span>Seleccionados: @ProductosSeleccionados</span>
+            </div>
+        </div>
+
+        <div class="summary-actions">
+            <div class="summary-total">
+                @* Cálculo monetario total de los elementos seleccionados *@
+                Total: @TotalSeleccionado.ToString("C")
+            </div>
+
+            @* Botón para procesar el pago únicamente de los artículos marcados *@
+            <MudButton Class="btn-pay btn-pay--selected"
+                       OnClick="PagarSeleccionados">
+                Pagar seleccionados
+            </MudButton>
+
+            @* Botón para procesar el pago de todos los artículos presentes en el carrito *@
+            <MudButton Class="btn-pay btn-pay--all"
+                       OnClick="PagarTodo">
+                Pagar todo
+            </MudButton>
+        </div>
+    </div>
+
+    @* LÓGICA DE CARGA: Si la lista de ítems es nula, muestra un indicador de carga *@
+    @if (_items == null)
+    {
+        <MudProgressCircular Indeterminate />
+    }
+    @* Si la lista está vacía, muestra un mensaje informativo *@
+    else if (!_items.Any())
+    {
+        <MudAlert Severity="Severity.Info">
+            El carrito está vacío
+        </MudAlert>
+    }
+    else
+    {
+        <div class="cart-grid">
+            @foreach (var item in _items)
+            {
+                var availability = item.Drone.Availability;
+
+                <div class="cart-card">
+
+                    <MudCheckBox T="bool"
+                                 @bind-Value="item.Selected"
+                                 Class="select-box" />
+
+                    <img src="@(item.Drone?.Images?.FirstOrDefault()?.UrlImageDron ?? "/images/no-image.png")"
+                         alt="@item.Drone?.Name" />
+
+                    <h3>@item.Drone?.Name</h3>
+
+                    <div class="specs">
+                        <span>📷 @item.Drone?.Camera</span>
+
+                        <span>
+                            @switch (availability)
+                            {
+                                case DroneAvailability.Both:
+                                    <text>💰 Venta / 🗓️ Renta</text>
+                                    break;
+
+                                case DroneAvailability.Sale:
+                                    <text>💰 Solo Venta</text>
+                                    break;
+
+                                case DroneAvailability.Rent:
+                                    <text>🗓️ Solo Renta</text>
+                                    break;
+
+                                default:
+                                    <text>❓ No definido</text>
+                                    break;
+                            }
+                        </span>
+                    </div>
+
+                    <div class="price">
+                        @item.UnitPrice.ToString("C")
+                    </div>
+
+                    <div class="qty-row">
+                        <MudNumericField T="int"
+                                         @bind-Value="item.Quantity"
+                                         Min="1"
+                                         Immediate="true"
+                                         Variant="Variant.Outlined" />
+
+                        <span>@item.SubTotal.ToString("C")</span>
+                    </div>
+
+                    <MudButton Class="drone-btn btn-delete"
+                               Color="Color.Error"
+                               Variant="Variant.Filled"
+                               OnClick="@(() => Remove(item.CartItemID))">
+                        Quitar
+                    </MudButton>
+
+                    @* 🔥 VALIDACIÓN REAL: SOLO usar Availability *@
+                    @if (availability == DroneAvailability.Rent ||
+                                availability == DroneAvailability.Both)
+                    {
+                        <MudButton Class="drone-btn btn-edit ms-2"
+                                   Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   OnClick="@(() => OpenRentModal(item))">
+                            Rentar
+                        </MudButton>
+                    }
+
+                </div>
+            }
+        </div>
+    }
+</div>
+
+
+<style>
+    :root {
+        --teal-1: #E0F2F1;
+        --teal-2: #B2DFDB;
+        --teal-3: #26A69A;
+        --teal-4: #00796B;
+        --teal-5: #004D40;
+    }
+
+    /* ===== BACKGROUND GENERAL ===== */
+    .cart-wrap {
+        padding: 1.8rem;
+        min-height: 100vh;
+        background: linear-gradient(135deg, var(--teal-1), #ffffff);
+    }
+
+    /* ===== HEADER RESUMEN ===== */
+    .cart-summary {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.2rem 1.6rem;
+        margin-bottom: 1.5rem;
+        border-radius: 20px;
+        background: linear-gradient(135deg, rgba(0,77,64,0.95), rgba(38,166,154,0.9));
+        color: white;
+        box-shadow: 0 12px 30px rgba(0,0,0,.25);
+        backdrop-filter: blur(10px);
+        animation: fadeUp .5s ease;
+    }
+
+    .summary-meta {
+        font-size: .9rem;
+        opacity: .85;
+        margin-top: 4px;
+    }
+
+    .summary-actions {
+        display: flex;
+        align-items: center;
+        gap: .8rem;
+    }
+
+    .summary-total {
+        font-size: 1.4rem;
+        font-weight: 900;
+        margin-right: .5rem;
+    }
+
+    /* ===== GRID ===== */
+    .cart-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.4rem;
+    }
+
+    /* ===== CARD ===== */
+    .cart-card {
+        position: relative;
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(8px);
+        border-radius: 22px;
+        padding: 1.2rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,.12);
+        transition: all .3s ease;
+        overflow: hidden;
+        animation: fadeUp .6s ease;
+    }
+
+        .cart-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 18px 40px rgba(0,0,0,.18);
+        }
+
+        /* ===== IMAGEN ===== */
+        .cart-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 16px;
+            margin-bottom: .8rem;
+            transition: transform .4s ease;
+        }
+
+        .cart-card:hover img {
+            transform: scale(1.04);
+        }
+
+        /* ===== TITULO ===== */
+        .cart-card h3 {
+            margin: .2rem 0 .5rem;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #1f1f1f;
+        }
+
+    /* ===== SPECS ===== */
+    .specs {
+        display: flex;
+        justify-content: space-between;
+        gap: .6rem;
+        font-size: .8rem;
+        padding: .4rem .6rem;
+        background: rgba(0,0,0,0.03);
+        border-radius: 10px;
+        margin: .5rem 0;
+    }
+
+        .specs span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+    /* ===== PRICE ===== */
+    .price {
+        font-size: 1.2rem;
+        font-weight: 900;
+        color: var(--teal-4);
+        margin-top: .4rem;
+    }
+
+    /* ===== QTY ===== */
+    .qty-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: .7rem 0;
+        padding-top: .4rem;
+    }
+
+    /* ===== CHECKBOX ===== */
+    .select-box {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        transform: scale(1.1);
+    }
+
+    /* ===== BOTONES BASE ===== */
+    .btn-pay {
+        border-radius: 999px;
+        padding: .6rem 1.3rem;
+        font-weight: 800;
+        letter-spacing: .3px;
+        color: white;
+        border: none;
+        transition: all .25s ease;
+        box-shadow: 0 8px 18px rgba(0,0,0,.25);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .btn-pay:hover {
+            transform: translateY(-3px) scale(1.04);
+        }
+
+        /* glow */
+        .btn-pay::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.25), transparent 60%);
+            opacity: 0;
+            transition: .3s;
+        }
+
+        .btn-pay:hover::after {
+            opacity: 1;
+        }
+
+    /* ===== VARIANTES ===== */
+    .btn-pay--selected {
+        background: linear-gradient(135deg, #009688, #00796B);
+    }
+
+    .btn-pay--all {
+        background: linear-gradient(135deg, #2ECC71, #1E8449);
+    }
+
+    .cart-card {
+        position: relative;
+        cursor: pointer;
+    }
+
+        /* evita que la imagen bloquee clicks en overlays */
+        .cart-card img {
+            pointer-events: none;
+        }
+
+    .select-box {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        transform: scale(1.2);
+        z-index: 5;
+        background: rgba(255,255,255,0.9);
+        border-radius: 6px;
+        padding: 2px;
+    }
+
+    .cart-card {
+        user-select: none;
+    }
+
+        .cart-card:hover {
+            outline: 2px solid rgba(0,150,136,0.25);
+        }
+
+    /* ===== RESPONSIVE ===== */
+    @@media (max-width: 1100px) {
+        .cart-grid
+
+    {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    }
+
+    @@media (max-width: 700px) {
+        .cart-grid
+
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .cart-summary {
+        flex-direction: column;
+        gap: .8rem;
+        text-align: center;
+    }
+
+    }
+
+    /* ===== ANIMACION ===== */
+    @@keyframes fadeUp {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+</style>

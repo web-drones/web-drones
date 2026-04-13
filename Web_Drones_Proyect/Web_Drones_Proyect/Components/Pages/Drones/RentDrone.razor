@@ -1,0 +1,264 @@
+﻿@page "/renta"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using MudBlazor
+@using Web_Drones_Proyect.Data
+@using Web_Drones_Proyect.Enums
+@using Web_Drones_Proyect.Models
+@using Microsoft.AspNetCore.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@using System.Security.Claims
+@using Web_Drones_Proyect.Services
+
+
+<MudContainer Class="mt-10 d-flex flex-column align-items-center">
+
+    <MudText Typo="Typo.h3" Class="renta-title mb-8">
+        DRONES DE RENTA
+    </MudText>
+
+    <!-- Itera todos los drones obtenidos desde la base de datos -->
+    @for (int i = 0; i < _drones.Count; i++)
+    {
+        var drone = _drones[i];
+
+        // Alterna la posición de la imagen (izquierda / derecha)
+        bool imageLeft = i % 2 == 0;
+
+        <MudPaper Class="drone-card mb-4" Elevation="2">
+
+            <div class="drone-row-card">
+
+                <!-- Imagen a la izquierda -->
+                @if (imageLeft)
+                {
+                    <MudImage Src="@(drone.Images.FirstOrDefault()?.UrlImageDron ?? "/images/no-image.png")"
+                              Alt="@drone.Name"
+                              Class="drone-image" />
+                }
+
+                <!-- Información del dron -->
+                <div class="drone-info @(imageLeft ? "drone-info-right" : "drone-info-left")">
+
+                    <div class="drone-info-content">
+
+                        <!-- Nombre -->
+                        <MudText Typo="Typo.h5" Class="mb-3">@drone.Name</MudText>
+
+                        <div class="drone-highlights">
+
+                            <!-- CÁMARA -->
+                            <div class="highlight-card main">
+                                <div class="highlight-text">
+                                    <span class="highlight-title">
+                                        <MudIcon Icon="@Icons.Material.Filled.PhotoCamera" Class="inline-icon" />
+                                        Cámara
+                                    </span>
+                                    <span class="highlight-value">
+                                        @drone.Camera
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- FEATURES SECUNDARIOS -->
+                            <div class="highlight-row">
+
+                                <div class="highlight-card mini">
+                                    <div class="highlight-text">
+                                        <span class="highlight-title">
+                                            <MudIcon Icon="@Icons.Material.Filled.BatteryChargingFull" Class="inline-icon" />
+                                            Autonomía
+                                        </span>
+                                        <span class="highlight-value">@drone.Autonomy min</span>
+                                    </div>
+                                </div>
+
+                                <div class="highlight-card mini">
+                                    <div class="highlight-text">
+                                        <span class="highlight-title">
+                                            <MudIcon Icon="@Icons.Material.Filled.SettingsInputAntenna" Class="inline-icon" />
+                                            Alcance
+                                        </span>
+                                        <span class="highlight-value">@drone.Scope km</span>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Botones de acciones -->
+                        <div class="button-row">
+
+                            <AuthorizeView Roles="ADMIN,CLIENTE">
+                                <MudButton Class="drone-btn btn-add"
+                                           StartIcon="@Icons.Material.Filled.AddShoppingCart"
+                                           OnClick="@(() => AddToCartAsync(drone))">
+                                    Añadir
+                                </MudButton>
+                            </AuthorizeView>
+
+                            <MudButton Class="drone-btn btn-view"
+                                       StartIcon="@Icons.Material.Filled.Visibility"
+                                       OnClick="@(() => Nav.NavigateTo($"/drones/details/{drone.DronID}"))">
+                                Ver
+                            </MudButton>
+
+                            <AuthorizeView Roles="ADMIN">
+                                <Authorized>
+
+                                    <MudButton Class="drone-btn btn-edit"
+                                               StartIcon="@Icons.Material.Filled.Edit"
+                                               OnClick="@(() => EditDroneAsync(drone))">
+                                        Editar
+                                    </MudButton>
+
+                                    <MudButton Class="drone-btn btn-delete"
+                                               StartIcon="@Icons.Material.Filled.Delete"
+                                               OnClick="@(() => DeleteDroneAsync(drone.DronID))">
+                                        Borrar
+                                    </MudButton>
+
+                                </Authorized>
+                            </AuthorizeView>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Imagen a la derecha -->
+                @if (!imageLeft)
+                {
+                    <MudImage Src="@(drone.Images.FirstOrDefault()?.UrlImageDron ?? "/images/no-image.png")"
+                              Alt="@drone.Name"
+                              Class="drone-image" />
+                }
+
+            </div>
+
+        </MudPaper>
+    }
+
+</MudContainer>
+
+@code {
+    [Inject] private ApplicationDbContext _context { get; set; } = default!;
+    [Inject] private IDialogService DialogService { get; set; } = default!;
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+    [Inject] private CartService CartService { get; set; } = default!;
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
+
+    private List<Drone> _drones = new();
+    private ClaimsPrincipal? _user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _user = authState.User;
+
+        _drones = await _context.Drones
+            .Include(d => d.Images)
+            .Include(d => d.Category)
+            .Where(d =>
+                d.PriceRent != null &&
+                (d.Category.Name == "Renta" || d.Category.Name == "Venta / Renta")
+            )
+            .ToListAsync();
+    }
+
+    private async Task EditDroneAsync(Drone drone)
+    {
+        var parameters = new DialogParameters
+        {
+            { "DroneToEdit", drone }
+        };
+
+        var options = new DialogOptions
+        {
+            CloseButton = true,
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<AddDrone>(
+            "Editar Dron",
+            parameters,
+            options
+        );
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            _drones = await _context.Drones
+                .Include(d => d.Images)
+                .Where(d =>
+                        d.PriceRent != null &&
+                        d.Category != null &&
+                       (d.Category.Name == "Renta" || d.Category.Name == "Venta / Renta")) // solo drones disponibles para renta
+                .ToListAsync();
+
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteDroneAsync(int droneId)
+    {
+        var drone = await _context.Drones
+            .Include(d => d.Images)
+            .FirstOrDefaultAsync(d => d.DronID == droneId);
+
+        if (drone == null)
+            return;
+
+        foreach (var img in drone.Images)
+        {
+            var filePath = Path.Combine(
+                Environment.CurrentDirectory,
+                "wwwroot",
+                "images",
+                "drones",
+                Path.GetFileName(img.UrlImageDron)
+            );
+
+            if (File.Exists(filePath))
+                File.Delete(filePath);
+        }
+
+        _context.Drones.Remove(drone);
+        await _context.SaveChangesAsync();
+
+        _drones = await _context.Drones
+            .Include(d => d.Images)
+            .Include(d => d.Category)
+            .Where(d =>
+                d.PriceRent != null &&
+                (d.Category.Name == "Renta" || d.Category.Name == "Venta / Renta")
+            )
+            .ToListAsync();
+
+        StateHasChanged();
+    }
+
+    private async Task AddToCartAsync(Drone drone)
+    {
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userId = int.Parse(auth.User
+            .FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        var result = await CartService.AddItemAsync(
+            userId,
+            drone.DronID,
+            true, // 👉 TRUE = RENTA
+            1
+        );
+
+        if (result == AddToCartResult.Success)
+            Snackbar.Add("Dron añadido al carrito (renta)", Severity.Success);
+        else
+            Snackbar.Add("Dron no disponible para renta", Severity.Warning);
+    }
+}
+

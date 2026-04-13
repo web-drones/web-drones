@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
+using Web_Drones_Proyect.Enums;
 
 namespace Web_Drones_Proyect.Models
 {
@@ -20,6 +21,9 @@ namespace Web_Drones_Proyect.Models
         [Column("PrecioRenta")]
         public decimal? PriceRent { get; set; }
 
+
+
+
         [Required]
         [Column("Estado")]
         public string State { get; set; } = string.Empty;
@@ -35,6 +39,9 @@ namespace Web_Drones_Proyect.Models
 
         [Column("Camara")]
         public string Camera { get; set; } = string.Empty;
+        [Column("Descripcion")]
+        [StringLength(500)]
+        public string Description { get; set; } = string.Empty;
 
         // FK a Tipo de Dron
         [Column("TipoDron_ID")]
@@ -49,6 +56,8 @@ namespace Web_Drones_Proyect.Models
 
         [ForeignKey("CategoryID")]
         public Category Category { get; set; } = null!;
+
+        public DroneAvailability Availability { get; set; }
 
         // Relaciones
         public ICollection<DetailsSale> SaleDetails { get; set; } = new List<DetailsSale>();

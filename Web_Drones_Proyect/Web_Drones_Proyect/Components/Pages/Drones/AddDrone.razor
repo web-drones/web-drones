@@ -1,0 +1,299 @@
+﻿@using MudBlazor
+@using Web_Drones_Proyect.Data.Repositories
+@using Web_Drones_Proyect.Models
+@using Microsoft.AspNetCore.Components.Forms
+
+<!-- Diálogo modal para crear o editar drones -->
+<MudDialog Class="drone-dialog">
+
+    <DialogContent>
+        <!-- Formulario principal del dron -->
+        <MudForm @ref="_form" Model="_drone">
+
+            <MudGrid>
+
+                <!-- COLUMNA IZQUIERDA: datos del dron -->
+                <MudItem xs="12" md="5" Class="form-column">
+
+                    <MudText Typo="Typo.h6" Class="section-title">
+                        Información del dron
+                    </MudText>
+
+                    <MudTextField @bind-Value="_drone.Name"
+                                  Label="Nombre"
+                                  Required="true"
+                                  RequiredError="El nombre es obligatorio"
+                                  Class="input-teal" />
+
+                    <MudSelect T="int"
+                               Label="Categoría"
+                               @bind-Value="_drone.CategoryID"
+                               Immediate="true"
+                               Dense="true"
+                               RequiredError="Seleccione una categoría"
+                               Class="input-teal">
+                        @foreach (var cat in _categories)
+                        {
+                            <MudSelectItem Value="@cat.CategoryID">@cat.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudSelect T="int"
+                               Label="Tipo de Dron"
+                               @bind-Value="_drone.TypeDroneID"
+                               Immediate="true"
+                               Dense="true"
+                               RequiredError="Seleccione el tipo de dron"
+                               Class="input-teal">
+                        @foreach (var type in _types)
+                        {
+                            <MudSelectItem Value="@type.TypeDroneID">@type.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudNumericField T="decimal?"
+                                     @bind-Value="_drone.PriceSale"
+                                     Label="Precio Venta"
+                                     Min="0"
+                                     Class="input-teal" />
+
+                    <MudNumericField T="decimal?"
+                                     @bind-Value="_drone.PriceRent"
+                                     Label="Precio Renta"
+                                     Min="0"
+                                     Class="input-teal" />
+
+                    <MudSelect T="string"
+                               Label="Estado"
+                               @bind-Value="_drone.State"
+                               Immediate="true"
+                               Dense="true"
+                               Class="input-teal">
+                        <MudSelectItem Value="@("Disponible")">Disponible</MudSelectItem>
+                        <MudSelectItem Value="@("No disponible")">No disponible</MudSelectItem>
+                    </MudSelect>
+
+                    <MudNumericField T="int"
+                                     @bind-Value="_drone.Stock"
+                                     Label="Stock"
+                                     Required="true"
+                                     Min="0"
+                                     Class="input-teal" />
+
+                    <MudNumericField T="int"
+                                     @bind-Value="_drone.Autonomy"
+                                     Label="Autonomía"
+                                     Min="0"
+                                     Class="input-teal" />
+
+                    <MudNumericField T="int"
+                                     @bind-Value="_drone.Scope"
+                                     Label="Alcance"
+                                     Required="true"
+                                     Min="0"
+                                     RequiredError="El alcance es obligatorio"
+                                     Class="input-teal" />
+
+                    <MudTextField @bind-Value="_drone.Camera"
+                                  Label="Cámara"
+                                  Class="input-teal" />
+
+                    <MudTextField @bind-Value="_drone.Description"
+                                  Label="Descripción"
+                                  Lines="3"
+                                  Class="input-teal" />
+
+                </MudItem>
+
+                <!-- COLUMNA DERECHA: imagen -->
+                <MudItem xs="12" md="7">
+
+                    <MudPaper Class="image-card" Elevation="0">
+
+                        <MudText Typo="Typo.h6" Class="section-title text-center">
+                            Imagen del dron
+                        </MudText>
+
+                        <InputFile OnChange="UploadImage" class="upload-input" />
+
+                        @if (!string.IsNullOrEmpty(_imagePath))
+                        {
+                            <MudImage Src="@_imagePath"
+                                      Alt="Preview"
+                                      Class="preview-img" />
+                        }
+
+                    </MudPaper>
+
+                </MudItem>
+
+            </MudGrid>
+
+        </MudForm>
+    </DialogContent>
+
+    <!-- Botones de acción -->
+    <DialogActions>
+        <div class="actions-container">
+            <MudButton OnClick="Cancel" Class="btn-cancel">
+                Cancelar
+            </MudButton>
+
+            <MudButton OnClick="async () => await Save()" Class="btn-save">
+                Guardar
+            </MudButton>
+        </div>
+    </DialogActions>
+
+</MudDialog>
+<style>
+    :root {
+        --teal-1: #E0F2F1;
+        --teal-2: #B2DFDB;
+        --teal-3: #26A69A;
+        --teal-4: #00796B;
+        --teal-5: #004D40;
+    }
+
+    /* ===== DIALOG ===== */
+    .drone-dialog {
+        background: linear-gradient(180deg, var(--teal-5), #0f1f1c);
+        color: white;
+        border-radius: 22px;
+        box-shadow: 0 20px 50px rgba(0,0,0,.5);
+    }
+
+    /* ===== COLUMNAS ===== */
+    .form-column {
+        display: flex;
+        flex-direction: column;
+        gap: .75rem;
+    }
+
+    /* ===== TITULOS ===== */
+    .section-title {
+        font-weight: 900;
+        margin-bottom: .5rem;
+        color: var(--teal-2);
+    }
+
+    /* ===== INPUTS ===== */
+    .input-teal input,
+    .input-teal textarea,
+    .input-teal label {
+        color: white !important;
+    }
+
+    .input-teal .mud-input-root {
+        background: rgba(255,255,255,.05);
+        /*border-radius: 10px;*/
+
+    }
+
+    /* ===== SELECT DROPDOWN ===== */
+    .mud-popover .mud-list {
+        background-color: #102421 !important;
+    }
+
+    .mud-popover .mud-list-item {
+        color: var(--teal-2) !important;
+    }
+
+    .mud-popover .mud-list-item:hover {
+        background-color: var(--teal-4) !important;
+    }
+
+    /* ===== IMAGEN ===== */
+    .image-card {
+        background: rgba(255,255,255,.06);
+        border-radius: 20px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .upload-input {
+        margin-bottom: .75rem;
+        color: white;
+    }
+
+    .preview-img {
+        width: 100%;
+        max-height: 260px;
+        object-fit: contain;
+        border-radius: 14px;
+    }
+
+    /* ===== BOTONES ===== */
+    .actions-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 1rem 0;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #26A69A, #00796B);
+        color: white;
+        font-weight: 900;
+        border-radius: 999px;
+        padding: .55rem 1.4rem;
+        box-shadow: 0 8px 22px rgba(0,0,0,.3);
+    }
+
+    .btn-cancel {
+        color: #FF6B6B;
+        border-radius: 999px;
+        font-weight: 800;
+    }
+
+    .mud-dialog-titlebar-close {
+        color: var(--teal-2) !important;
+    }
+
+    /* ===== FIX DROPDOWN SELECT TEXT (valor seleccionado) ===== */
+    .input-teal .mud-select-input {
+        color: white !important;
+    }
+
+    /* texto dentro del select cuando ya hay valor */
+    .input-teal .mud-input-slot {
+        color: white !important;
+    }
+
+    /* label del select */
+    .input-teal .mud-input-label {
+        color: white !important;
+    }
+
+    /* ícono del dropdown */
+    .input-teal .mud-select-icon {
+        color: var(--teal-2) !important;
+    }
+
+    .mud-popover .mud-list-item .mud-typography {
+        color: black !important;
+    }
+
+    .mud-popover .mud-list {
+        background-color: #0f1f1c !important; /* fondo oscuro */
+        border: 1px solid rgba(38, 166, 154, 0.3);
+    }
+
+    /* texto de los items */
+    .mud-popover .mud-list-item {
+        color: white !important;
+    }
+
+        /* hover más bonito */
+        .mud-popover .mud-list-item:hover {
+            background-color: #00796B !important;
+            color: white !important;
+        }
+
+        /* item seleccionado */
+        .mud-popover .mud-list-item.mud-selected-item {
+            background-color: #26A69A !important;
+            color: white !important;
+        }
+</style>

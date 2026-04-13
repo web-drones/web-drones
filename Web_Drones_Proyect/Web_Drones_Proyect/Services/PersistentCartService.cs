@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Web_Drones_Proyect.Data;
 using Web_Drones_Proyect.Enums;
+using Web_Drones_Proyect.Helpers;
 using Web_Drones_Proyect.Models;
 
 namespace Web_Drones_Proyect.Services
@@ -40,7 +41,9 @@ namespace Web_Drones_Proyect.Services
             return cart;
         }
 
-        // Agregar item al carrito (VENTA / RENTA)
+        // =========================
+        // AGREGAR ITEM (VENTA / RENTA)
+        // =========================
         public async Task<AddToCartResult> AddItemAsync(
             int userId,
             int dronId,
@@ -53,32 +56,27 @@ namespace Web_Drones_Proyect.Services
             if (drone == null)
                 throw new Exception("Drone no encontrado");
 
+            var availability = DronePricingHelper.GetAvailability(drone);
+
             //  Stock
             if (drone.Stock <= 0)
                 return AddToCartResult.OutOfStock;
 
-            // 🔁 Si no es venta pero solo existe renta → forzar renta
-            if (!isRent && !drone.PriceSale.HasValue && drone.PriceRent.HasValue)
-            {
-                return await AddRentItemAsync(
-                    userId,
-                    dronId,
-                    DateTime.Today,
-                    DateTime.Today.AddDays(1),
-                    quantity
-                );
-            }
-
-            // Validaciones normales
-            if (isRent && !drone.PriceRent.HasValue)
+            // 🔥 reglas basadas en disponibilidad (SIN PRECIOS)
+            if (availability == DroneAvailability.Sale && isRent)
                 return AddToCartResult.NotAvailable;
 
-            if (!isRent && !drone.PriceSale.HasValue)
-                return AddToCartResult.NotAvailable;
+            if (availability == DroneAvailability.Rent && !isRent)
+                isRent = true;
 
-            var unitPrice = isRent
-                ? drone.PriceRent!.Value
-                : drone.PriceSale!.Value;
+            decimal unitPrice;
+
+            if (isRent && drone.PriceRent.HasValue)
+                unitPrice = drone.PriceRent.Value;
+            else if (!isRent && drone.PriceSale.HasValue)
+                unitPrice = drone.PriceSale.Value;
+            else
+                return AddToCartResult.NotAvailable;
 
             var item = cart.Items.FirstOrDefault(i =>
                 i.DronID == dronId &&
@@ -99,7 +97,10 @@ namespace Web_Drones_Proyect.Services
                     UnitPrice = unitPrice,
                     IsRent = isRent,
                     Status = CartItemStatus.InCart,
-                    AddedAt = DateTime.Now
+                    AddedAt = DateTime.Now,
+
+                    // 🔥 AQUÍ VA LA MEJORA CLAVE
+                    AvailabilityMode = availability
                 });
             }
 
@@ -109,6 +110,9 @@ namespace Web_Drones_Proyect.Services
             return AddToCartResult.Success;
         }
 
+        // =========================
+        // AGREGAR RENTA
+        // =========================
         public async Task<AddToCartResult> AddRentItemAsync(
             int userId,
             int dronId,
@@ -137,7 +141,6 @@ namespace Web_Drones_Proyect.Services
 
             var rentPricePerDay = drone.PriceRent.Value;
 
-            // ⚠️ RENTAS NUNCA SE AGRUPAN
             cart.Items.Add(new CartItem
             {
                 DronID = dronId,
@@ -146,9 +149,12 @@ namespace Web_Drones_Proyect.Services
                 RentStartDate = startDate.Date,
                 RentEndDate = endDate.Date,
                 RentPricePerDay = rentPricePerDay,
-                UnitPrice = rentPricePerDay, // solo para compatibilidad
+                UnitPrice = rentPricePerDay,
                 Status = CartItemStatus.InCart,
-                AddedAt = DateTime.Now
+                AddedAt = DateTime.Now,
+
+                // 🔥 IMPORTANTE TAMBIÉN AQUÍ
+                AvailabilityMode = DroneAvailability.Rent
             });
 
             cart.UpdatedAt = DateTime.Now;
@@ -157,13 +163,18 @@ namespace Web_Drones_Proyect.Services
             return AddToCartResult.Success;
         }
 
-        //  Obtener items del carrito
+        // =========================
+        // OBTENER ITEMS
+        // =========================
         public async Task<List<CartItem>> GetItemsAsync(int userId)
         {
             var cart = await _context.Carts
                 .Include(c => c.Items)
                     .ThenInclude(i => i.Drone)
                         .ThenInclude(d => d.Images)
+                .Include(c => c.Items)
+                    .ThenInclude(i => i.Drone)
+                        .ThenInclude(d => d.Category)
                 .FirstOrDefaultAsync(c =>
                     c.UserID == userId &&
                     c.Status == CartStatus.Active
@@ -177,7 +188,9 @@ namespace Web_Drones_Proyect.Services
                 .ToList();
         }
 
-        //  Eliminar item (lógico)
+        // =========================
+        // ELIMINAR ITEM
+        // =========================
         public async Task RemoveItemAsync(int cartItemId)
         {
             var item = await _context.CartItems.FindAsync(cartItemId);

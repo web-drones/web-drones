@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using Web_Drones_Proyect.Data;
 using Web_Drones_Proyect.Enums;
+using Web_Drones_Proyect.Helpers;
 using Web_Drones_Proyect.Models;
 using Web_Drones_Proyect.Services;
+using Web_Drones_Proyect.Helpers;
 
 namespace Web_Drones_Proyect.Components.Pages.Drones
 {
@@ -73,24 +75,16 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
                 auth.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value
             );
 
-            bool isRent = false;
+            // 🔥 AQUÍ está la verdad del producto
+            var availability = DronePricingHelper.GetAvailability(_drone);
 
-            // SOLO renta
-            if (_drone.PriceRent.HasValue && !_drone.PriceSale.HasValue)
+            bool isRent = availability switch
             {
-                isRent = true;
-            }
-            // SOLO venta
-            else if (_drone.PriceSale.HasValue && !_drone.PriceRent.HasValue)
-            {
-                isRent = false;
-            }
-            // AMBOS → aquí decides regla real
-            else if (_drone.PriceSale.HasValue && _drone.PriceRent.HasValue)
-            {
-                // 🔥 regla correcta: por defecto venta (o luego UI de selección)
-                isRent = false;
-            }
+                DroneAvailability.Rent => true,
+                DroneAvailability.Sale => false,
+                DroneAvailability.Both => false, // 👈 CAMBIO IMPORTANTE
+                _ => false
+            };
 
             var result = await CartService.AddItemAsync(
                 userId,

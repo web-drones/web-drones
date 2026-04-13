@@ -94,6 +94,16 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
         private int ProductosSeleccionados =>
             _items.Count(i => i.Selected);
 
+        private bool EsVenta(CartItem item)
+        {
+            return item.Drone?.PriceSale.HasValue == true;
+        }
+
+        private bool EsRenta(CartItem item)
+        {
+            return item.Drone?.PriceRent.HasValue == true;
+        }
+
         // ===== PAGOS =====
 
         // Paga solo los productos seleccionados
@@ -138,6 +148,12 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
 
         private void OpenRentModal(CartItem item)
         {
+            if (!item.Drone.PriceRent.HasValue)
+            {
+                Snackbar.Add("Este dron no tiene opción de renta", Severity.Warning);
+                return;
+            }
+
             _rentItem = item;
             _rentStart = DateTime.Today;
             _rentEnd = DateTime.Today.AddDays(1);

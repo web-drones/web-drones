@@ -27,6 +27,8 @@ namespace Web_Drones_Proyect.Models
         [Required]
         public bool IsRent { get; set; }
 
+        public bool IsSale => !IsRent;
+
         [Required]
         public CartItemStatus Status { get; set; }
 
@@ -47,9 +49,6 @@ namespace Web_Drones_Proyect.Models
 
         [NotMapped]
         public decimal SubTotal => UnitPrice * Quantity;
-
-        [NotMapped]
-        public string PriceType => IsRent ? "Renta" : "Venta";
 
         // ===== PROPIEDADES PARA RENTA =====
 
@@ -72,22 +71,8 @@ namespace Web_Drones_Proyect.Models
                 ? RentDays * RentPricePerDay.Value * Quantity
                 : 0;
 
-        [NotMapped]
-        public string AvailabilityType
-        {
-            get
-            {
-                var canSell = Drone?.PriceSale.HasValue == true;
-                var canRent = Drone?.PriceRent.HasValue == true;
-
-                if (canSell && canRent) return "Venta / Renta";
-                if (canRent) return "Solo renta";
-                return "Solo venta";
-            }
-        }
-
-        [NotMapped]
-        public bool CanBeRented =>
-            Drone?.PriceRent.HasValue == true;
+        public DroneAvailability AvailabilityMode { get; set; }
     }
+
+
 }

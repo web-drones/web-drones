@@ -138,6 +138,14 @@ namespace Web_Drones_Proyect.Data
             modelBuilder.Entity<CartItem>()
                 .Property(ci => ci.Status)
                 .HasConversion<string>();
+
+            modelBuilder.Entity<CartItem>()
+                .Property(ci => ci.AvailabilityMode)
+                .HasConversion<int>();
+
+            modelBuilder.Entity<Drone>()
+                .Property(d => d.Availability)
+                .HasConversion<int>();
         }
     }
 }

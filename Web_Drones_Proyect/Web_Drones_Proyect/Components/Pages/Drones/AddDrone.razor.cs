@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using MudBlazor;
 using System.Linq;
 using Web_Drones_Proyect.Data.Repositories;
+using Web_Drones_Proyect.Enums;
 using Web_Drones_Proyect.Models;
 
 namespace Web_Drones_Proyect.Components.Pages.Drones
@@ -114,6 +115,16 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
             if (string.IsNullOrWhiteSpace(_drone.Camera))
                 _drone.Camera = "Sin cámara";
 
+            // 🔥 REGLA CLAVE: recalcular Availability SIEMPRE
+            _drone.Availability =
+                _drone.PriceSale > 0 && _drone.PriceRent > 0
+                    ? DroneAvailability.Both
+                    : _drone.PriceSale > 0
+                        ? DroneAvailability.Sale
+                        : _drone.PriceRent > 0
+                            ? DroneAvailability.Rent
+                            : 0;
+
             try
             {
                 if (DroneToEdit == null)
@@ -147,6 +158,16 @@ namespace Web_Drones_Proyect.Components.Pages.Drones
                     DroneToEdit.Scope = _drone.Scope;
                     DroneToEdit.Camera = _drone.Camera;
                     DroneToEdit.Description = _drone.Description;
+
+                    // 🔥 REGLA CLAVE TAMBIÉN EN EDITAR
+                    DroneToEdit.Availability =
+                        DroneToEdit.PriceSale > 0 && DroneToEdit.PriceRent > 0
+                            ? DroneAvailability.Both
+                            : DroneToEdit.PriceSale > 0
+                                ? DroneAvailability.Sale
+                                : DroneToEdit.PriceRent > 0
+                                    ? DroneAvailability.Rent
+                                    : 0;
 
                     DroneRepository.Update(DroneToEdit);
                     await DroneRepository.SaveChangesAsync();
